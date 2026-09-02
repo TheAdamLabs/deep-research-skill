@@ -95,9 +95,9 @@ Each independent sub-question from the DAG gets its own subagent running in para
 
 ### 3a: Launch independent sub-questions
 
-In a **single message**, launch one `generalPurpose` subagent per independent sub-question. Each subagent:
+In a **single message**, launch one subagent per independent sub-question (use whatever subagent primitive your harness provides: Task tool in Cursor, `claude -p` via bash in Claude Code). Each subagent:
 - Gets its own isolated context window
-- Runs its own searches (minimum 5 WebSearch + 2 WebFetch per subagent)
+- Runs its own searches (minimum 5 web searches + 2 full-page fetches per subagent)
 - Writes results to `evidence-[ID].md` in the shared output directory
 - Returns a one-paragraph summary of what it found
 
@@ -112,7 +112,7 @@ OUTPUT FILE: [full path to evidence-[ID].md]
 OUTPUT DIRECTORY: [full output directory path]
 
 Instructions:
-1. Run at least 5 WebSearch calls and 2 WebFetch calls to research your sub-question thoroughly.
+1. Run at least 5 web searches and fetch 2 full pages to research your sub-question thoroughly.
    Vary your query angles:
    - Broad: "[topic] 2026"
    - Specific: "[topic] [metric] site:[authority-domain]"
@@ -155,7 +155,7 @@ After all subagents complete, merge all `evidence-[ID].md` files into `evidence.
 cat [output-dir]/evidence-*.md > [output-dir]/evidence.md
 ```
 
-**Minimum search budget across all subagents combined: 25 WebSearch + 10 WebFetch.** If the total falls short (check by counting searches in evidence files), run additional searches yourself to fill the gap before moving to Phase 4.
+**Minimum search budget across all subagents combined: 25 web searches + 10 full-page fetches.** If the total falls short (check by counting searches in evidence files), run additional searches yourself to fill the gap before moving to Phase 4.
 
 ---
 
@@ -426,8 +426,8 @@ Follow-up: [1-2 questions worth pursuing]
 
 ## Defaults
 
-- **Minimum searches**: 25 WebSearch + 5 WebFetch per run
+- **Minimum searches**: 25 web searches + 5 full-page fetches per run
 - **Sub-questions**: 6-10
 - **Patch rounds**: max 2
 - **Stop signal**: same sources reappearing, or all evidence at `high`/`medium`
-- **Search tool**: WebSearch for discovery, WebFetch for full-page reading
+- **Search tool**: web search for discovery, full-page fetch for in-depth reading

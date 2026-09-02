@@ -4,7 +4,9 @@ A [Cursor Agent Skill](https://docs.cursor.com/agent/skills) for deep, multi-ste
 
 ## Install
 
-**Personal** (available in all projects):
+The `SKILL.md` format is compatible with both Cursor and Claude Code. Install path differs by harness.
+
+**Cursor - personal** (all projects):
 
 ```bash
 mkdir -p ~/.cursor/skills/deep-research
@@ -12,7 +14,7 @@ curl -o ~/.cursor/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
 ```
 
-**Project-level** (shared with collaborators via `.cursor/skills/`):
+**Cursor - project** (shared via `.cursor/skills/`):
 
 ```bash
 mkdir -p .cursor/skills/deep-research
@@ -20,7 +22,25 @@ curl -o .cursor/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
 ```
 
-Start a new chat to pick up the skill.
+**Claude Code - personal** (all projects):
+
+```bash
+mkdir -p ~/.claude/skills/deep-research
+curl -o ~/.claude/skills/deep-research/SKILL.md \
+  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
+```
+
+**Claude Code - project** (shared via `.claude/skills/`):
+
+```bash
+mkdir -p .claude/skills/deep-research
+curl -o .claude/skills/deep-research/SKILL.md \
+  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
+```
+
+Start a new chat to pick up the skill. No restart needed in Claude Code (skills hot-reload).
+
+> **Note:** The parallel subagent phase requires harness support for spawning subagents. In Cursor this uses the Task tool. In Claude Code it uses `claude -p` via bash. The skill body uses generic language; the agent resolves to whatever its harness provides.
 
 ## Usage
 
