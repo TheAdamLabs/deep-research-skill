@@ -18,7 +18,7 @@ Produces **saved files**, not chat text. Every run creates a timestamped directo
 2. Create the directory with `mkdir -p`
 3. State the full output path before proceeding
 
-Deliverables are decided in Phase 1 based on query complexity and type. The only constant: keep chat output to a short summary block — never paste full research into chat.
+Deliverables are decided in Phase 1 based on query complexity and type. The only constant: keep chat output to a short summary block. Never paste full research into chat.
 
 ---
 
@@ -27,12 +27,12 @@ Deliverables are decided in Phase 1 based on query complexity and type. The only
 Classify the query. Write this to the top of `report.md` immediately.
 
 **Type:**
-- `comparative` — X vs Y vs Z
-- `exploratory` — state of X, how X works
-- `temporal` — history/evolution of X
-- `decision` — should we do X
-- `factual` — specific facts, numbers
-- `synthesis` — best approaches to X
+- `comparative`: X vs Y vs Z
+- `exploratory`: state of X, how X works
+- `temporal`: history/evolution of X
+- `decision`: should we do X
+- `factual`: specific facts, numbers
+- `synthesis`: best approaches to X
 
 **Answer shape:** what does a correct answer look like as a data structure? (table / timeline / ranked list / brief+evidence / narrative)
 
@@ -44,13 +44,13 @@ Classify the query. Write this to the top of `report.md` immediately.
 
 | Complexity | Typical deliverables |
 |---|---|
-| Simple factual / quick lookup | `report.md` only — a short structured answer |
+| Simple factual / quick lookup | `report.md` only: a short structured answer |
 | Moderate (1 clear artifact) | `report.md` + `evidence.md` |
 | Complex / multi-dimensional | `report.md` + `evidence.md` + `dashboard.html` |
 
 `dashboard.html` only earns its cost when the artifact has multiple sections a user will want to navigate (comparison tables, timelines with many entries, multi-section synthesis). Don't generate it for a focused factual question.
 
-State the chosen deliverables here. This is the plan — do not add files not listed.
+State the chosen deliverables here. This is the plan. Do not add files not listed.
 
 ---
 
@@ -91,7 +91,7 @@ State findings. If framing is wrong, re-run Phase 1 and 2 before proceeding.
 
 ## Phase 3: Subagent Launch
 
-Each independent sub-question from the DAG gets its own subagent running in parallel. Do not run searches yourself in this phase — spawn subagents and let them do the work.
+Each independent sub-question from the DAG gets its own subagent running in parallel. Do not run searches yourself in this phase. Spawn subagents and let them do the work.
 
 ### 3a: Launch independent sub-questions
 
@@ -139,7 +139,7 @@ CLAIM: ...
 
 ### 3b: Launch dependent sub-questions
 
-After independent subagents complete, read their `evidence-[ID].md` files, then launch subagents for dependent sub-questions — passing relevant findings from dependencies as context in the prompt.
+After independent subagents complete, read their `evidence-[ID].md` files, then launch subagents for dependent sub-questions, passing relevant findings from dependencies as context in the prompt.
 
 Use the same subagent prompt template, adding:
 ```
@@ -167,7 +167,7 @@ Append to `evidence.md` after each search batch:
 ## [Sub-question ID]: [Sub-question text]
 
 CLAIM: [one-sentence atomic fact]
-SOURCE: [full URL — never a domain name or title alone]
+SOURCE: [full URL; never a domain name or title alone]
 FRESHNESS: [date or "unknown"]
 CONFIDENCE: high | medium | low | conflicted
 NOTE: [only if conflicted - what each source says]
@@ -175,16 +175,16 @@ NOTE: [only if conflicted - what each source says]
 CLAIM: ...
 ```
 
-**SOURCE field rules — no exceptions:**
+**SOURCE field rules - no exceptions:**
 - Always the full URL (`https://...`). Never a bare domain, publication name, or "source unavailable".
 - If a claim comes from a paywalled or unresolvable page, record the URL anyway and mark FRESHNESS "paywalled".
 - One SOURCE per CLAIM. If two sources back the same claim, record the claim twice with different SOURCE lines.
 
 **Confidence rules:**
-- `high` — 2+ independent primary sources agree
-- `medium` — 1 credible primary source, or multiple secondary sources
-- `low` — single secondary source, or inference
-- `conflicted` — sources disagree; document both positions
+- `high`: 2+ independent primary sources agree
+- `medium`: 1 credible primary source, or multiple secondary sources
+- `low`: single secondary source, or inference
+- `conflicted`: sources disagree; document both positions
 
 ---
 
@@ -192,10 +192,10 @@ CLAIM: ...
 
 After merging all evidence, run gap check against `evidence.md`:
 
-- Sub-questions with only `low`/`conflicted` evidence → spawn a targeted subagent with a tighter, more specific prompt
-- New sub-questions that emerged during research → add to plan and spawn a subagent
-- Load-bearing claims with weak sourcing → spawn a subagent specifically tasked with finding a primary source or disconfirming evidence
-- Same sources appearing repeatedly → stop, that search space is saturated
+- Sub-questions with only `low`/`conflicted` evidence: spawn a targeted subagent with a tighter, more specific prompt
+- New sub-questions that emerged during research: add to plan and spawn a subagent
+- Load-bearing claims with weak sourcing: spawn a subagent specifically tasked with finding a primary source or disconfirming evidence
+- Same sources appearing repeatedly: stop, that search space is saturated
 
 For each gap requiring more research, spawn one subagent per gap (in parallel if multiple gaps). Merge results back into `evidence.md`. One gap-fill round maximum.
 
@@ -203,11 +203,11 @@ For each gap requiring more research, spawn one subagent per gap (in parallel if
 
 ## Phase 6: Output Artifact
 
-Write the full artifact to `report.md`. **Do not write prose summaries** — use the template for the query type from Phase 1.
+Write the full artifact to `report.md`. **Do not write prose summaries. Use the template for the query type from Phase 1.**
 
 **Citation rule for every template below:** every factual claim must carry an inline source link using the format `[[domain.com]](https://full-url)`. No claim without a source. In tables, add a source column or superscript footnotes rather than omitting citations.
 
-### Comparative → Table
+### Comparative -> Table
 
 ```markdown
 # [Query Title]
@@ -220,10 +220,10 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 *† = low-confidence source*
 
 ## Conflicts & gaps
-[What sources disagreed on, what couldn't be found — each conflict cites both URLs]
+[What sources disagreed on, what couldn't be found (each conflict cites both URLs)]
 ```
 
-### Temporal → Timeline
+### Temporal -> Timeline
 
 ```markdown
 # [Query Title]
@@ -233,36 +233,36 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 | 2020 | [event] | [[domain.com]](https://url) | high |
 
 ## Key turning points
-[2-3 sentences on inflection points — each sentence ends with [[domain.com]](url)]
+[2-3 sentences on inflection points, each ending with [[domain.com]](url)]
 ```
 
-### Decision → Brief + Evidence
+### Decision -> Brief + Evidence
 
 ```markdown
 # [Query Title]
 
 ## Recommendation
-[One direct sentence: yes / no / depends on X] — [[primary-source.com]](url)
+[One direct sentence: yes / no / depends on X] [[primary-source.com]](url)
 
 ## Why
-- [Reason 1] — [[source.com]](url)
-- [Reason 2] — [[source.com]](url)
-- [Reason 3] — [[source.com]](url)
+- [Reason 1] [[source.com]](url)
+- [Reason 2] [[source.com]](url)
+- [Reason 3] [[source.com]](url)
 
 ## Risks / unknowns
-- [What could invalidate this] — [[source.com]](url) *(confidence: low)*
+- [What could invalidate this] [[source.com]](url) *(confidence: low)*
 
 ## Full evidence
-[Organized by sub-question — every claim has [[domain]](url)]
+[Organized by sub-question; every claim has [[domain]](url)]
 ```
 
-### Exploratory / Synthesis → Claim Map
+### Exploratory / Synthesis -> Claim Map
 
 ```markdown
 # [Query Title]
 
 ## High-confidence findings
-- [Claim] — [[source.com]](url)
+- [Claim] [[source.com]](url)
 
 ## Contested / unclear
 - [Claim]: [[Source A]](urlA) says X / [[Source B]](urlB) says Y
@@ -271,7 +271,7 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 - [What was searched for but not found]
 
 ## Summary
-[Narrative only where structure doesn't fit — keep under 200 words, inline citations throughout]
+[Narrative only where structure doesn't fit; keep under 200 words, inline citations throughout]
 ```
 
 ### Always append
@@ -303,8 +303,8 @@ TOTAL: /12
 ```
 
 - **10-12**: proceed to dashboard
-- **7-9**: patch — spawn one subagent targeting the lowest-scoring dimension, re-synthesize only that section, re-score once
-- **0-6**: restart Phase 1 — framing was wrong, patching won't fix it
+- **7-9**: patch: spawn one subagent targeting the lowest-scoring dimension, re-synthesize only that section, re-score once
+- **0-6**: restart Phase 1 (framing was wrong, patching won't fix it)
 
 Max 2 patch rounds. After 2, deliver with explicit notes on what remains weak.
 
@@ -321,7 +321,7 @@ YOUR TASK: Find sources that specifically address this gap. Return findings in e
 
 ## Phase 8: Dashboard
 
-Generate `dashboard.html` — a self-contained single file (inline CSS + JS, no external dependencies). Must be fully responsive: desktop shows sidebar nav, mobile collapses to a top sticky bar.
+Generate `dashboard.html` -- a self-contained single file (inline CSS + JS, no external dependencies). Must be fully responsive: desktop shows sidebar nav, mobile collapses to a top sticky bar.
 
 **Source link rule:** every URL from `evidence.md` must appear as a real `<a href="..." target="_blank" rel="noopener">` link. Never render a URL as plain text.
 
@@ -333,7 +333,7 @@ Structure:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>[Query] — Deep Research</title>
+  <title>[Query] -- Deep Research</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
@@ -354,7 +354,7 @@ Structure:
     }
     body { font-family: system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
 
-    /* ── Sidebar nav (desktop) ── */
+    /* Sidebar nav (desktop) */
     nav {
       position: fixed; top: 0; left: 0; width: var(--nav-w);
       height: 100vh; overflow-y: auto;
@@ -369,7 +369,7 @@ Structure:
     nav a.active { border-left: 3px solid var(--accent); padding-left: 7px; }
     .nav-meta { margin-top: auto; font-size: 11px; color: #475569; line-height: 1.8; border-top: 1px solid #1e293b; padding-top: 16px; }
 
-    /* ── Mobile top bar ── */
+    /* Mobile top bar */
     .mobile-bar {
       display: none; position: sticky; top: 0; z-index: 200;
       background: var(--nav-bg); padding: 0 16px;
@@ -379,40 +379,40 @@ Structure:
     .mobile-bar a { display: inline-block; color: var(--nav-text); text-decoration: none; padding: 14px 12px; font-size: 13px; }
     .mobile-bar a:hover { color: var(--nav-active); }
 
-    /* ── Main content ── */
+    /* Main content */
     main { margin-left: var(--nav-w); padding: 48px 52px; max-width: calc(var(--nav-w) + 860px); }
     h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 6px; }
     h2 { font-size: 18px; font-weight: 600; margin: 40px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     h3 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; color: var(--muted); }
     .meta { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
 
-    /* ── Score cards ── */
+    /* Score cards */
     .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 32px; }
     .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .score-card .num { font-size: 30px; font-weight: 700; color: var(--accent); }
     .score-card .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .total-score { background: var(--accent); color: white; border-radius: 10px; padding: 14px 20px; font-weight: 600; font-size: 15px; text-align: center; margin-bottom: 24px; }
 
-    /* ── Takeaways ── */
+    /* Takeaways */
     .takeaways { list-style: none; padding: 0; margin: 0 0 16px; }
     .takeaways li { display: flex; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 14.5px; }
-    .takeaways li::before { content: "→"; color: var(--accent); flex-shrink: 0; }
+    .takeaways li::before { content: "->"; color: var(--accent); flex-shrink: 0; }
 
-    /* ── Tables ── */
+    /* Tables */
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin: 16px 0; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     thead th { background: #f1f5f9; padding: 11px 14px; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
     tbody tr:hover { background: #f8fafc; }
     td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: top; }
 
-    /* ── Confidence tags ── */
+    /* Confidence tags */
     .tag { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 600; }
     .tag-high { background: var(--high-bg); color: var(--high); }
     .tag-med  { background: var(--med-bg);  color: var(--med); }
     .tag-low  { background: var(--low-bg);  color: var(--low); }
     .tag-conf { background: var(--conf-bg); color: var(--conf); }
 
-    /* ── Source links ── */
+    /* Source links */
     .sources-list { list-style: none; padding: 0; margin: 0; }
     .sources-list li { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 13.5px; }
     .src-num { color: var(--muted); font-size: 12px; padding-top: 2px; }
@@ -420,15 +420,15 @@ Structure:
     .src-link:hover { text-decoration: underline; }
     .src-meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
 
-    /* ── Gap / follow-up cards ── */
+    /* Gap / follow-up cards */
     .gap-list { list-style: none; padding: 0; margin: 0; }
     .gap-list li { padding: 10px 14px 10px 38px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
     .gap-list li::before { content: "?"; position: absolute; left: 14px; color: var(--muted); font-weight: 700; }
     .followup-list { list-style: none; padding: 0; margin: 0; }
     .followup-list li { padding: 10px 14px 10px 38px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
-    .followup-list li::before { content: "→"; position: absolute; left: 14px; color: #3b82f6; font-weight: 700; }
+    .followup-list li::before { content: "->"; position: absolute; left: 14px; color: #3b82f6; font-weight: 700; }
 
-    /* ── Responsive ── */
+    /* Responsive */
     @media (max-width: 768px) {
       nav { display: none; }
       .mobile-bar { display: block; }
@@ -580,17 +580,18 @@ Final chat message: short, always. List only the files that were actually produc
 Research complete. Score: [X]/12 · [N] searches · [N] sources
 
 📁 [output directory path]
-  [file1] — [one-phrase description]
-  [file2] — [one-phrase description]
+  [file1]: [one-phrase description]
+  [file2]: [one-phrase description]
 
 Key finding: [one sentence]
-Gaps: [one sentence — what's still unknown]
+Gaps: [one sentence about what's still unknown]
 Follow-up: [1-2 questions worth pursuing]
 ```
 
 - Never paste report content into chat
 - If a deliverable wasn't produced (e.g. no dashboard for a simple query), don't mention it
 - If the answer is genuinely unresolvable, say so directly in key finding
+- **Never use em dashes (—) in any output file or chat message.** Replace with a colon, comma, semicolon, period, or parentheses as appropriate.
 
 ---
 
