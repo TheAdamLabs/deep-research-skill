@@ -167,13 +167,18 @@ Append to `evidence.md` after each search batch:
 ## [Sub-question ID]: [Sub-question text]
 
 CLAIM: [one-sentence atomic fact]
-SOURCE: [URL]
+SOURCE: [full URL — never a domain name or title alone]
 FRESHNESS: [date or "unknown"]
 CONFIDENCE: high | medium | low | conflicted
 NOTE: [only if conflicted - what each source says]
 
 CLAIM: ...
 ```
+
+**SOURCE field rules — no exceptions:**
+- Always the full URL (`https://...`). Never a bare domain, publication name, or "source unavailable".
+- If a claim comes from a paywalled or unresolvable page, record the URL anyway and mark FRESHNESS "paywalled".
+- One SOURCE per CLAIM. If two sources back the same claim, record the claim twice with different SOURCE lines.
 
 **Confidence rules:**
 - `high` — 2+ independent primary sources agree
@@ -200,6 +205,8 @@ For each gap requiring more research, spawn one subagent per gap (in parallel if
 
 Write the full artifact to `report.md`. **Do not write prose summaries** — use the template for the query type from Phase 1.
 
+**Citation rule for every template below:** every factual claim must carry an inline source link using the format `[[domain.com]](https://full-url)`. No claim without a source. In tables, add a source column or superscript footnotes rather than omitting citations.
+
 ### Comparative → Table
 
 ```markdown
@@ -208,12 +215,12 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 
 | Dimension | Option A | Option B | Option C |
 |-----------|----------|----------|----------|
-| ...       | ...†     | ...      | ...      |
+| [dim]     | [value] [[src]](url) | [value] [[src]](url) | [value] [[src]](url) |
 
-† low-confidence source
+*† = low-confidence source*
 
 ## Conflicts & gaps
-[What sources disagreed on, what couldn't be found]
+[What sources disagreed on, what couldn't be found — each conflict cites both URLs]
 ```
 
 ### Temporal → Timeline
@@ -223,10 +230,10 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 
 | Year | Event | Source | Confidence |
 |------|-------|--------|------------|
-| 2020 | ...   | [url]  | high       |
+| 2020 | [event] | [[domain.com]](https://url) | high |
 
 ## Key turning points
-[2-3 sentences on inflection points]
+[2-3 sentences on inflection points — each sentence ends with [[domain.com]](url)]
 ```
 
 ### Decision → Brief + Evidence
@@ -235,18 +242,18 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 # [Query Title]
 
 ## Recommendation
-[One direct sentence: yes / no / depends on X]
+[One direct sentence: yes / no / depends on X] — [[primary-source.com]](url)
 
 ## Why
-- [Reason 1] — [source]
-- [Reason 2] — [source]
-- [Reason 3] — [source]
+- [Reason 1] — [[source.com]](url)
+- [Reason 2] — [[source.com]](url)
+- [Reason 3] — [[source.com]](url)
 
 ## Risks / unknowns
-- [What could invalidate this] — [confidence: low]
+- [What could invalidate this] — [[source.com]](url) *(confidence: low)*
 
 ## Full evidence
-[Organized by sub-question]
+[Organized by sub-question — every claim has [[domain]](url)]
 ```
 
 ### Exploratory / Synthesis → Claim Map
@@ -255,16 +262,16 @@ Write the full artifact to `report.md`. **Do not write prose summaries** — use
 # [Query Title]
 
 ## High-confidence findings
-- [Claim] — [source]
+- [Claim] — [[source.com]](url)
 
 ## Contested / unclear
-- [Claim]: [Source A says X] / [Source B says Y]
+- [Claim]: [[Source A]](urlA) says X / [[Source B]](urlB) says Y
 
 ## Couldn't find
 - [What was searched for but not found]
 
 ## Summary
-[Narrative only where structure doesn't fit — keep under 200 words]
+[Narrative only where structure doesn't fit — keep under 200 words, inline citations throughout]
 ```
 
 ### Always append
@@ -314,87 +321,250 @@ YOUR TASK: Find sources that specifically address this gap. Return findings in e
 
 ## Phase 8: Dashboard
 
-Generate `dashboard.html` — a self-contained single file (inline CSS, no external dependencies).
+Generate `dashboard.html` — a self-contained single file (inline CSS + JS, no external dependencies). Must be fully responsive: desktop shows sidebar nav, mobile collapses to a top sticky bar.
+
+**Source link rule:** every URL from `evidence.md` must appear as a real `<a href="..." target="_blank" rel="noopener">` link. Never render a URL as plain text.
 
 Structure:
 
 ```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>[Query]</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>[Query] — Deep Research</title>
   <style>
-    /* clean, readable styles — dark sidebar, white content area */
-    body { font-family: system-ui; margin: 0; display: flex; }
-    nav { width: 220px; background: #1a1a2e; color: #eee; padding: 24px 16px; min-height: 100vh; }
-    nav a { display: block; color: #aaa; text-decoration: none; padding: 6px 0; font-size: 13px; }
-    nav a:hover { color: white; }
-    main { flex: 1; padding: 40px; max-width: 900px; }
-    .score-card { display: flex; gap: 16px; margin: 24px 0; }
-    .score { background: #f5f5f5; border-radius: 8px; padding: 16px; text-align: center; flex: 1; }
-    .score .num { font-size: 32px; font-weight: bold; }
-    .high { color: #16a34a; } .medium { color: #d97706; } .low { color: #dc2626; }
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    th { background: #f5f5f5; padding: 10px; text-align: left; }
-    td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-    .tag-high { background: #dcfce7; color: #15803d; }
-    .tag-med  { background: #fef9c3; color: #854d0e; }
-    .tag-low  { background: #fee2e2; color: #b91c1c; }
-    .tag-conf { background: #ede9fe; color: #6d28d9; }
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --nav-w: 230px;
+      --nav-bg: #0f172a;
+      --nav-text: #94a3b8;
+      --nav-active: #f8fafc;
+      --accent: #6366f1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --high: #16a34a; --high-bg: #dcfce7;
+      --med:  #b45309; --med-bg:  #fef3c7;
+      --low:  #dc2626; --low-bg:  #fee2e2;
+      --conf: #7c3aed; --conf-bg: #ede9fe;
+    }
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* ── Sidebar nav (desktop) ── */
+    nav {
+      position: fixed; top: 0; left: 0; width: var(--nav-w);
+      height: 100vh; overflow-y: auto;
+      background: var(--nav-bg); padding: 28px 20px;
+      display: flex; flex-direction: column; gap: 4px;
+      z-index: 100;
+    }
+    .nav-brand { color: #f8fafc; font-weight: 700; font-size: 15px; margin-bottom: 20px; letter-spacing: -0.3px; }
+    .nav-brand span { color: var(--accent); }
+    nav a { color: var(--nav-text); text-decoration: none; padding: 7px 10px; border-radius: 6px; font-size: 13.5px; transition: background 0.15s, color 0.15s; }
+    nav a:hover, nav a.active { background: rgba(255,255,255,0.08); color: var(--nav-active); }
+    nav a.active { border-left: 3px solid var(--accent); padding-left: 7px; }
+    .nav-meta { margin-top: auto; font-size: 11px; color: #475569; line-height: 1.8; border-top: 1px solid #1e293b; padding-top: 16px; }
+
+    /* ── Mobile top bar ── */
+    .mobile-bar {
+      display: none; position: sticky; top: 0; z-index: 200;
+      background: var(--nav-bg); padding: 0 16px;
+      overflow-x: auto; white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .mobile-bar a { display: inline-block; color: var(--nav-text); text-decoration: none; padding: 14px 12px; font-size: 13px; }
+    .mobile-bar a:hover { color: var(--nav-active); }
+
+    /* ── Main content ── */
+    main { margin-left: var(--nav-w); padding: 48px 52px; max-width: calc(var(--nav-w) + 860px); }
+    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 6px; }
+    h2 { font-size: 18px; font-weight: 600; margin: 40px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    h3 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; color: var(--muted); }
+    .meta { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+    /* ── Score cards ── */
+    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 32px; }
+    .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .score-card .num { font-size: 30px; font-weight: 700; color: var(--accent); }
+    .score-card .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .total-score { background: var(--accent); color: white; border-radius: 10px; padding: 14px 20px; font-weight: 600; font-size: 15px; text-align: center; margin-bottom: 24px; }
+
+    /* ── Takeaways ── */
+    .takeaways { list-style: none; padding: 0; margin: 0 0 16px; }
+    .takeaways li { display: flex; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 14.5px; }
+    .takeaways li::before { content: "→"; color: var(--accent); flex-shrink: 0; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th { background: #f1f5f9; padding: 11px 14px; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+    tbody tr:hover { background: #f8fafc; }
+    td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+
+    /* ── Confidence tags ── */
+    .tag { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 600; }
+    .tag-high { background: var(--high-bg); color: var(--high); }
+    .tag-med  { background: var(--med-bg);  color: var(--med); }
+    .tag-low  { background: var(--low-bg);  color: var(--low); }
+    .tag-conf { background: var(--conf-bg); color: var(--conf); }
+
+    /* ── Source links ── */
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 13.5px; }
+    .src-num { color: var(--muted); font-size: 12px; padding-top: 2px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .src-meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    /* ── Gap / follow-up cards ── */
+    .gap-list { list-style: none; padding: 0; margin: 0; }
+    .gap-list li { padding: 10px 14px 10px 38px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
+    .gap-list li::before { content: "?"; position: absolute; left: 14px; color: var(--muted); font-weight: 700; }
+    .followup-list { list-style: none; padding: 0; margin: 0; }
+    .followup-list li { padding: 10px 14px 10px 38px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
+    .followup-list li::before { content: "→"; position: absolute; left: 14px; color: #3b82f6; font-weight: 700; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      nav { display: none; }
+      .mobile-bar { display: block; }
+      main { margin-left: 0; padding: 24px 18px; }
+      .score-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 20px; }
+      .sources-list li { grid-template-columns: 20px 1fr; }
+      .src-meta { display: none; }
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <div style="font-weight:bold;margin-bottom:24px;color:white">Deep Research</div>
+
+  <!-- desktop sidebar -->
+  <nav id="sidebar">
+    <div class="nav-brand">Deep <span>Research</span></div>
     <a href="#summary">Summary</a>
-    <a href="#artifact">Findings</a>
+    <a href="#findings">Findings</a>
     <a href="#confidence">Confidence</a>
     <a href="#sources">Sources</a>
     <a href="#gaps">Gaps</a>
+    <div class="nav-meta">
+      [Date]<br>
+      [N] sources · [N] searches<br>
+      Score [X]/12
+    </div>
   </nav>
+
+  <!-- mobile top strip -->
+  <div class="mobile-bar">
+    <a href="#summary">Summary</a>
+    <a href="#findings">Findings</a>
+    <a href="#confidence">Confidence</a>
+    <a href="#sources">Sources</a>
+    <a href="#gaps">Gaps</a>
+  </div>
+
   <main>
     <h1>[Query]</h1>
-    <p style="color:#666">[Date] · [N] sources · [type] query</p>
+    <p class="meta">[Date] &nbsp;·&nbsp; [N] sources &nbsp;·&nbsp; [type] query</p>
 
     <section id="summary">
       <h2>Summary</h2>
-      <!-- score card -->
-      <div class="score-card">
-        <div class="score"><div class="num">[N]/3</div>Completeness</div>
-        <div class="score"><div class="num">[N]/3</div>Accuracy</div>
-        <div class="score"><div class="num">[N]/3</div>Relevance</div>
-        <div class="score"><div class="num">[N]/3</div>Artifact fit</div>
+      <div class="total-score">Overall score: [X] / 12</div>
+      <div class="score-grid">
+        <div class="score-card"><div class="num">[N]/3</div><div class="label">Completeness</div></div>
+        <div class="score-card"><div class="num">[N]/3</div><div class="label">Accuracy</div></div>
+        <div class="score-card"><div class="num">[N]/3</div><div class="label">Relevance</div></div>
+        <div class="score-card"><div class="num">[N]/3</div><div class="label">Artifact fit</div></div>
       </div>
-      <!-- key takeaways as bullets -->
+      <h3>Key takeaways</h3>
+      <ul class="takeaways">
+        <li>[Takeaway 1]</li>
+        <li>[Takeaway 2]</li>
+        <li>[Takeaway 3]</li>
+      </ul>
     </section>
 
-    <section id="artifact">
+    <section id="findings">
       <h2>Findings</h2>
-      <!-- paste the main artifact here: table, timeline, or claim map as HTML -->
+      <!--
+        Paste the main artifact here as HTML.
+        For tables: wrap in <div class="table-wrap"><table>...</table></div>
+        Every claim cell that has a source: add <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>
+      -->
     </section>
 
     <section id="confidence">
       <h2>Evidence confidence</h2>
-      <!-- table of claims grouped by confidence level with .tag-high/.tag-med/.tag-low badges -->
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Claim</th><th>Source</th><th>Freshness</th><th>Confidence</th></tr></thead>
+          <tbody>
+            <!--
+              One row per claim from evidence.md.
+              <tr>
+                <td>[claim text]</td>
+                <td><a href="[url]" target="_blank" rel="noopener" class="src-link">[domain.com]</a></td>
+                <td>[date]</td>
+                <td><span class="tag tag-high">high</span></td>
+              </tr>
+              Use tag-high / tag-med / tag-low / tag-conf classes.
+            -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section id="sources">
-      <h2>Sources</h2>
-      <!-- ordered list of sources: URL, domain, date, confidence tag -->
+      <h2>Sources <small style="font-size:13px;font-weight:400;color:var(--muted)">([N] total)</small></h2>
+      <ol class="sources-list">
+        <!--
+          One <li> per unique URL from evidence.md, ordered by confidence then freshness.
+          <li>
+            <span class="src-num">[N]</span>
+            <a href="[full URL]" target="_blank" rel="noopener" class="src-link">[full URL]</a>
+            <span class="src-meta"><span class="tag tag-high">high</span> &nbsp; [date]</span>
+          </li>
+        -->
+      </ol>
     </section>
 
     <section id="gaps">
-      <h2>Gaps & follow-up</h2>
-      <!-- what couldn't be found + 3 follow-up questions -->
+      <h2>Gaps &amp; follow-up</h2>
+      <h3>What couldn't be found</h3>
+      <ul class="gap-list">
+        <li>[Gap 1]</li>
+        <li>[Gap 2]</li>
+      </ul>
+      <h3>Follow-up questions</h3>
+      <ul class="followup-list">
+        <li>[Follow-up question 1]</li>
+        <li>[Follow-up question 2]</li>
+        <li>[Follow-up question 3]</li>
+      </ul>
     </section>
   </main>
+
+  <script>
+    // Highlight active nav link on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { threshold: 0.3 });
+    sections.forEach(s => observer.observe(s));
+  </script>
 </body>
 </html>
 ```
 
-Fill in all sections from `report.md` and `evidence.md`. Write to `dashboard.html`. Then open it:
+Fill in all sections from `report.md` and `evidence.md`. Every URL from evidence must be a real `<a>` tag. Write to `dashboard.html`, then open it:
 
 ```bash
 open dashboard.html   # macOS
