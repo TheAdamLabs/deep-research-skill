@@ -256,37 +256,38 @@ cat [skill-directory]/dashboard-template.html
 ```
 The skill directory is the directory containing this SKILL.md file (e.g. `/Users/you/.cursor/skills/deep-research/`).
 
-2. **Write the complete dashboard** to `[output-dir]/dashboard.html` using the template as your structural base. Populate every placeholder in a single `Write` call: do not use StrReplace on placeholders. You have full freedom to adapt the structure for your query type.
+2. **Write the complete dashboard** to `[output-dir]/dashboard.html` in a single `Write` call. Populate every `[PLACEHOLDER]`. You have full freedom to adapt the HTML structure for your query type.
 
-The template ships with these optional layout components -- use them where they help, skip them where plain HTML fits better:
-- `.option-grid` + `.option-card`: side-by-side cards for 2-6 named options
-- `.verdict-box .positive/.negative/.neutral`: a highlighted recommendation box
-- `.claim-list` (`.med` / `.low` / `.conf`): left-bordered list with confidence tiers
-- `table.timeline-table`: narrow 2-col table for chronological data
+**Styling: the template uses DaisyUI 5 + Tailwind CSS 4 (loaded via CDN).** Use DaisyUI components for all UI elements -- the agent skill at `.agents/skills/daisyui/` has the full component reference if you need it. Key components for research dashboards:
+- `card` / `card-body`: group related findings
+- `alert alert-success/warning/error`: verdict, recommendation, or gap
+- `table table-zebra`: evidence and sources tables
+- `badge badge-success/warning/error/secondary`: confidence tier labels
+- `timeline timeline-vertical`: chronological events
+- `progress progress-primary`: comparison bars
+- `stats` / `stat`: score display (already in template)
 
-Plain `<h3>` + `<p>` + `<ul>` works fine for most findings. Choose what fits the data.
+For SVG-based visuals (concept maps, timeline graphs): write custom inline SVG inside a `<div class="overflow-x-auto">` wrapper.
 
 **What to populate in each section:**
 
-| Section | Content source |
+| Section | Content |
 |---|---|
 | `<title>` and `<h1>` | Query title |
-| `.nav-meta`, `.meta` | Date, source count, score |
-| `#summary` | Direct answer as `.headline-finding`; 4-6 key insights; then scores and donut |
-| `#charts` | Visual that best supports your findings (optional for simple queries) |
-| `#findings` | Your Phase 6 synthesis -- best format for the data |
-| `#confidence` tbody | One `<tr>` per key claim from `evidence.md` (curate to ~20-40 for long runs) |
-| `#sources` | One `<li>` per unique URL from `evidence.md`, ordered by confidence then freshness |
-| `#gaps` | Gaps and follow-up questions from your synthesis |
+| `.nav-meta` in sidebar | Date, source/search counts, score |
+| `#summary` | `[HEADLINE_FINDING]`: 1-2 sentence direct answer. Key insights list. Score placeholders. |
+| `#charts` | Best visual for your findings (skip entirely for simple queries) |
+| `#findings` | Your Phase 6 synthesis in the best DaisyUI layout for the data |
+| `#confidence` tbody | One `<tr>` per key claim with `badge` for confidence tier |
+| `#sources` | One `<li>` per unique URL, ordered by confidence then freshness |
+| `#gaps` | `alert-warning` per gap, `alert-info` per follow-up question |
 
-**Source link rule:** every URL from `evidence.md` must appear as a real `<a href="..." target="_blank" rel="noopener">` link. Never render a URL as plain text.
+**Source link rule:** every URL from `evidence.md` must appear as a real `<a href="..." target="_blank" rel="noopener" class="link link-primary">` link. Never render a URL as plain text.
 
 3. **Open the dashboard:**
 ```bash
 open [output-dir]/dashboard.html   # macOS
 ```
-
-<!-- removed: template HTML lives in dashboard-template.html -->
 
 ---
 

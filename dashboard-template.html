@@ -1,452 +1,284 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>[QUERY_TITLE]: Deep Research</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    :root {
-      --nav-w: 230px;
-      --nav-bg: #0f172a;
-      --nav-text: #94a3b8;
-      --nav-active: #f8fafc;
-      --accent: #6366f1;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #1e293b;
-      --muted: #64748b;
-      --high: #16a34a; --high-bg: #dcfce7;
-      --med:  #b45309; --med-bg:  #fef3c7;
-      --low:  #dc2626; --low-bg:  #fee2e2;
-      --conf: #7c3aed; --conf-bg: #ede9fe;
+  <!-- DaisyUI 5 + Tailwind CSS 4 via CDN (requires internet) -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    /* Confidence donut: multi-segment conic-gradient; JS renders the gradient */
+    .donut {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: #e2e8f0; /* placeholder; JS overwrites */
+      position: relative; flex-shrink: 0;
     }
-    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
-
-    /* Sidebar nav (desktop) */
-    nav {
-      position: fixed; top: 0; left: 0; width: var(--nav-w);
-      height: 100vh; overflow-y: auto;
-      background: var(--nav-bg); padding: 28px 20px;
-      display: flex; flex-direction: column; gap: 4px;
-      z-index: 100;
-    }
-    .nav-brand { color: #f8fafc; font-weight: 700; font-size: 15px; margin-bottom: 20px; letter-spacing: -0.3px; }
-    .nav-brand span { color: var(--accent); }
-    nav a { color: var(--nav-text); text-decoration: none; padding: 7px 10px; border-radius: 6px; font-size: 13.5px; transition: background 0.15s, color 0.15s; }
-    nav a:hover, nav a.active { background: rgba(255,255,255,0.08); color: var(--nav-active); }
-    nav a.active { border-left: 3px solid var(--accent); padding-left: 7px; }
-    .nav-meta { margin-top: auto; font-size: 11px; color: #475569; line-height: 1.8; border-top: 1px solid #1e293b; padding-top: 16px; }
-
-    /* Mobile top bar */
-    .mobile-bar {
-      display: none; position: sticky; top: 0; z-index: 200;
-      background: var(--nav-bg); padding: 0 16px;
-      overflow-x: auto; white-space: nowrap;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    }
-    .mobile-bar a { display: inline-block; color: var(--nav-text); text-decoration: none; padding: 14px 12px; font-size: 13px; }
-    .mobile-bar a:hover { color: var(--nav-active); }
-
-    /* Main content */
-    main { margin-left: var(--nav-w); padding: 48px 52px; max-width: calc(var(--nav-w) + 860px); }
-    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 6px; }
-    h2 { font-size: 18px; font-weight: 600; margin: 40px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-    h3 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; color: var(--muted); }
-    .meta { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
-
-    /* Score cards */
-    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 8px; }
-    .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .score-card .num { font-size: 30px; font-weight: 700; color: var(--accent); }
-    .score-card .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .total-score { background: var(--accent); color: white; border-radius: 10px; padding: 14px 20px; font-weight: 600; font-size: 15px; text-align: center; margin-bottom: 24px; }
-
-    /* Summary layout with donut */
-    .summary-top { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
-
-    /* Confidence donut */
-    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; }
-    .donut { width: 110px; height: 110px; border-radius: 50%; background: var(--border); position: relative; }
-    .donut::after { content: ''; position: absolute; inset: 22px; border-radius: 50%; background: var(--bg); }
-    .donut-legend { display: flex; flex-direction: column; gap: 4px; }
-    .donut-legend span { font-size: 12px; }
-
-    /* Headline finding (summary landing page) */
-    .headline-finding { font-size: 18px; font-weight: 500; line-height: 1.7; color: var(--text); margin: 0 0 24px; padding: 20px 24px; background: var(--surface); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; }
-
-    /* Takeaways */
-    .takeaways { list-style: none; padding: 0; margin: 0 0 16px; }
-    .takeaways li { display: flex; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 14.5px; }
-    .takeaways li::before { content: "->"; color: var(--accent); flex-shrink: 0; }
-
-    /* Tables */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin: 16px 0; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    thead th { background: #f1f5f9; padding: 11px 14px; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: normal; }
-    tbody tr:hover { background: #f8fafc; }
-    td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
-
-    /* Option cards (comparative findings: one card per option) */
-    .option-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
-    .option-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-    .option-card-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-    .option-card-verdict { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .option-card-verdict.positive { background: var(--high-bg); color: var(--high); }
-    .option-card-verdict.neutral  { background: var(--med-bg);  color: var(--med); }
-    .option-card-verdict.negative { background: var(--low-bg);  color: var(--low); }
-    .option-dim { display: flex; gap: 10px; font-size: 13px; padding: 7px 0; border-top: 1px solid var(--border); line-height: 1.4; }
-    .option-dim-label { color: var(--muted); min-width: 110px; flex-shrink: 0; font-weight: 500; padding-top: 1px; }
-    .option-dim-value { flex: 1; color: var(--text); }
-
-    /* Verdict box (decision findings) */
-    .verdict-box { border-radius: 12px; padding: 20px 24px; margin: 16px 0 24px; }
-    .verdict-box.positive { background: var(--high-bg); border: 2px solid var(--high); }
-    .verdict-box.negative { background: var(--low-bg);  border: 2px solid var(--low); }
-    .verdict-box.neutral  { background: var(--med-bg);  border: 2px solid var(--med); }
-    .verdict-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; opacity: 0.7; }
-    .verdict-text { font-size: 16px; font-weight: 600; line-height: 1.5; }
-    .verdict-source { font-size: 12px; margin-top: 10px; opacity: 0.8; }
-
-    /* Claim list (exploratory / synthesis findings) */
-    .claim-list { list-style: none; padding: 0; margin: 0 0 16px; }
-    .claim-list li { padding: 10px 14px 10px 18px; border-left: 3px solid var(--high); background: var(--surface); border-radius: 0 8px 8px 0; margin-bottom: 6px; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .claim-list li.med  { border-left-color: var(--med); }
-    .claim-list li.low  { border-left-color: var(--low); }
-    .claim-list li.conf { border-left-color: var(--conf); }
-
-    /* Timeline table (temporal findings: narrow year col) */
-    .timeline-table td:first-child { width: 80px; font-weight: 600; color: var(--accent); white-space: nowrap; vertical-align: top; }
-
-    /* Confidence tags */
-    .tag { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 600; }
-    .tag-high { background: var(--high-bg); color: var(--high); }
-    .tag-med  { background: var(--med-bg);  color: var(--med); }
-    .tag-low  { background: var(--low-bg);  color: var(--low); }
-    .tag-conf { background: var(--conf-bg); color: var(--conf); }
-
-    /* Source links */
-    .sources-list { list-style: none; padding: 0; margin: 0; }
-    .sources-list li { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 13.5px; }
-    .src-num { color: var(--muted); font-size: 12px; padding-top: 2px; }
-    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
-    .src-link:hover { text-decoration: underline; }
-    .src-meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
-
-    /* Gap / follow-up cards */
-    .gap-list { list-style: none; padding: 0; margin: 0; }
-    .gap-list li { padding: 10px 14px 10px 38px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
-    .gap-list li::before { content: "?"; position: absolute; left: 14px; color: var(--muted); font-weight: 700; }
-    .followup-list { list-style: none; padding: 0; margin: 0; }
-    .followup-list li { padding: 10px 14px 10px 38px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
-    .followup-list li::before { content: "->"; position: absolute; left: 14px; color: #3b82f6; font-weight: 700; }
-
-    /* Horizontal bar chart (comparison bars) */
-    .hbar-group { margin-bottom: 18px; }
-    .hbar-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
-    .hbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-    .hbar-name { font-size: 13px; min-width: 120px; flex-shrink: 0; color: var(--text); }
-    .hbar-track { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
-    .hbar { height: 100%; border-radius: 5px; width: 0; transition: width 0.6s ease; }
-    .hbar-val { font-size: 12px; color: var(--muted); min-width: 40px; text-align: right; }
-
-    /* Vertical bar chart (decision ranking) */
-    .bar-chart-wrap { margin: 16px 0; }
-    .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 0 4px; border-bottom: 2px solid var(--border); }
-    .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
-    .bar { width: 100%; border-radius: 4px 4px 0 0; height: 0; transition: height 0.6s ease; min-height: 4px; }
-    .bar-label { font-size: 12px; text-align: center; margin-top: 8px; color: var(--text); font-weight: 500; word-break: break-word; }
-    .bar-score { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .bar-chart-caption { font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px; }
-
-    /* Heat-map matrix */
-    .heatmap { display: grid; gap: 3px; margin: 12px 0; }
-    .hm-head { font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 10px; text-align: center; }
-    .hm-cell-label { font-size: 12px; font-weight: 500; color: var(--text); padding: 8px 10px; display: flex; align-items: center; }
-    .hm-cell { border-radius: 4px; padding: 7px 10px; font-size: 12px; text-align: center; }
-    .hm-cell.tag-high { background: var(--high-bg); color: var(--high); }
-    .hm-cell.tag-med  { background: var(--med-bg);  color: var(--med); }
-    .hm-cell.tag-low  { background: var(--low-bg);  color: var(--low); }
-    .hm-cell.tag-conf { background: var(--conf-bg); color: var(--conf); }
-
-    /* SVG timeline */
-    .timeline-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; padding: 8px 0; }
-    .timeline-svg { width: 100%; min-width: 600px; display: block; }
-
-    /* Concept cluster SVG */
-    .concept-wrap { overflow-x: auto; margin: 12px 0; }
-    .concept-svg { width: 100%; display: block; max-width: 700px; margin: 0 auto; }
-
-    /* Responsive: mid-size (tablet / small laptop) */
-    @media (max-width: 1024px) {
-      :root { --nav-w: 180px; }
-      main { padding: 36px 32px; }
-    }
-
-    /* Responsive: mobile */
-    @media (max-width: 768px) {
-      nav { display: none; }
-      .mobile-bar { display: block; }
-      main { margin-left: 0; padding: 20px 16px; }
-      .score-grid { grid-template-columns: repeat(2, 1fr); }
-      h1 { font-size: 20px; }
-      .sources-list li { grid-template-columns: 20px 1fr; }
-      .src-meta { display: none; }
-      .hbar-name { min-width: 80px; }
-      .summary-top { flex-direction: column; }
-      .option-grid { grid-template-columns: 1fr; }
-      .verdict-box { padding: 16px; }
+    .donut::after {
+      content: ''; position: absolute; inset: 22px;
+      background: var(--color-base-100); border-radius: 50%;
     }
   </style>
 </head>
-<body>
+<body class="bg-base-200 min-h-screen">
 
-  <!-- desktop sidebar -->
-  <nav id="sidebar">
-    <div class="nav-brand">Deep <span>Research</span></div>
-    <a href="#summary">Summary</a>
-    <a href="#charts">Charts</a>
-    <a href="#findings">Findings</a>
-    <a href="#confidence">Confidence</a>
-    <a href="#sources">Sources</a>
-    <a href="#gaps">Gaps</a>
-    <div class="nav-meta">
-      [DATE]<br>
-      [N_SOURCES] sources · [N_SEARCHES] searches<br>
-      Score [SCORE]/12
+  <!-- ================================================================
+       LAYOUT: DaisyUI drawer — sidebar (desktop always open, mobile toggle)
+  ================================================================ -->
+  <div class="drawer lg:drawer-open">
+    <input id="sidebar-toggle" type="checkbox" class="drawer-toggle" />
+
+    <!-- MAIN CONTENT -->
+    <div class="drawer-content">
+
+      <!-- Mobile navbar -->
+      <div class="navbar bg-neutral text-neutral-content lg:hidden sticky top-0 z-50 shadow">
+        <label for="sidebar-toggle" class="btn btn-ghost btn-sm drawer-button">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </label>
+        <span class="font-bold">Deep Research</span>
+      </div>
+
+      <main class="p-6 lg:p-10 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold tracking-tight mb-1">[QUERY_TITLE]</h1>
+        <p class="text-base-content/60 text-sm mb-10">[DATE] &nbsp;·&nbsp; [N_SOURCES] sources &nbsp;·&nbsp; [QUERY_TYPE] query</p>
+
+        <!-- ============================================================
+             #summary : LANDING PAGE — put the answer here, not just scores.
+
+             Order of content:
+             1. headline-finding   Direct 1-2 sentence answer to the query.
+             2. key-insights       4-6 specific, sourced findings — the most
+                                   valuable content, above the fold.
+             3. stats + donut      Research quality metadata.
+             4. takeaways          Supporting nuances / caveats.
+
+             Count CLAIM lines in evidence.md by confidence tier for
+             data-high / data-med / data-low / data-conf on the donut.
+        ============================================================ -->
+        <section id="summary" class="mb-12">
+          <h2 class="text-xl font-bold mb-4 pb-3 border-b border-base-300">Summary</h2>
+
+          <!-- 1. Direct answer -->
+          <div class="border-l-4 border-primary bg-base-100 rounded-r-xl px-5 py-4 text-base font-medium leading-relaxed mb-6 shadow-sm">
+            [HEADLINE_FINDING]
+          </div>
+
+          <!-- 2. Key insights (4-6 sourced findings) -->
+          <ul class="flex flex-col gap-2 mb-8">
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3">
+              <span class="text-primary font-bold shrink-0 mt-0.5">→</span>
+              <span>[INSIGHT_1] <a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs font-medium">[domain]</a></span>
+            </li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3">
+              <span class="text-primary font-bold shrink-0 mt-0.5">→</span>
+              <span>[INSIGHT_2] <a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs font-medium">[domain]</a></span>
+            </li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3">
+              <span class="text-primary font-bold shrink-0 mt-0.5">→</span>
+              <span>[INSIGHT_3] <a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs font-medium">[domain]</a></span>
+            </li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3">
+              <span class="text-primary font-bold shrink-0 mt-0.5">→</span>
+              <span>[INSIGHT_4] <a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs font-medium">[domain]</a></span>
+            </li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3">
+              <span class="text-primary font-bold shrink-0 mt-0.5">→</span>
+              <span>[INSIGHT_5] <a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs font-medium">[domain]</a></span>
+            </li>
+          </ul>
+
+          <!-- 3a. Score stats (DaisyUI stat component) -->
+          <div class="stats stats-horizontal shadow bg-base-100 w-full mb-3 flex-wrap">
+            <div class="stat place-items-center">
+              <div class="stat-title">Completeness</div>
+              <div class="stat-value text-primary text-2xl">[C]/3</div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title">Accuracy</div>
+              <div class="stat-value text-success text-2xl">[A]/3</div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title">Relevance</div>
+              <div class="stat-value text-info text-2xl">[R]/3</div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title">Artifact fit</div>
+              <div class="stat-value text-secondary text-2xl">[F]/3</div>
+            </div>
+          </div>
+
+          <!-- 3b. Overall quality banner -->
+          <div role="alert" class="alert alert-success mb-5">
+            <span class="font-semibold">Research quality: [SCORE] / 12</span>
+          </div>
+
+          <!-- 3c. Confidence distribution donut -->
+          <div class="flex items-center gap-8 bg-base-100 rounded-xl border border-base-200 p-5 mb-6">
+            <div id="confidence-donut"
+              data-high="[COUNT_HIGH]"
+              data-med="[COUNT_MED]"
+              data-low="[COUNT_LOW]"
+              data-conf="[COUNT_CONF]"
+              class="donut">
+            </div>
+            <div class="flex flex-col gap-2 text-sm">
+              <span class="flex items-center gap-2"><span class="size-3 rounded-full bg-success inline-block"></span>High confidence: [COUNT_HIGH]</span>
+              <span class="flex items-center gap-2"><span class="size-3 rounded-full bg-warning inline-block"></span>Medium: [COUNT_MED]</span>
+              <span class="flex items-center gap-2"><span class="size-3 rounded-full bg-error inline-block"></span>Low: [COUNT_LOW]</span>
+              <span class="flex items-center gap-2"><span class="size-3 rounded-full bg-secondary inline-block"></span>Conflicted: [COUNT_CONF]</span>
+            </div>
+          </div>
+
+          <!-- 4. Supporting takeaways -->
+          <h3 class="text-base font-semibold text-base-content/70 mb-3">Key takeaways</h3>
+          <ul class="flex flex-col gap-2">
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm"><span class="text-primary shrink-0">→</span>[TAKEAWAY_1]</li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm"><span class="text-primary shrink-0">→</span>[TAKEAWAY_2]</li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm"><span class="text-primary shrink-0">→</span>[TAKEAWAY_3]</li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm"><span class="text-primary shrink-0">→</span>[TAKEAWAY_4]</li>
+            <li class="flex items-start gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm"><span class="text-primary shrink-0">→</span>[TAKEAWAY_5]</li>
+          </ul>
+        </section>
+
+        <!-- ============================================================
+             #charts : VISUAL SUPPLEMENT (optional for simple queries)
+             Use DaisyUI `progress` for comparison bars, `radial-progress`
+             for gauges, or custom inline SVG for timelines/concept maps.
+             Skip the section entirely for simple factual queries.
+
+             DaisyUI progress bar example:
+               <div class="mb-4">
+                 <div class="flex justify-between text-sm mb-1"><span>[Option]</span><span>[value]</span></div>
+                 <progress class="progress progress-primary w-full" value="[0-100]" max="100"></progress>
+               </div>
+
+             Inline SVG timeline example (keep the viewBox / x-formula):
+               <div class="overflow-x-auto">
+               <svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" class="w-full">
+                 <line x1="40" y1="80" x2="860" y2="80" stroke="#e2e8f0" stroke-width="2"/>
+                 x = 40 + ((year - minYear) / (maxYear - minYear)) * 820
+                 circle r: high=8 medium=6 low=4; conflicted: stroke-dasharray="4 2"
+                 alternate label y: above=58, below=108
+               </svg></div>
+        ============================================================ -->
+        <section id="charts" class="mb-12">
+          <h2 class="text-xl font-bold mb-4 pb-3 border-b border-base-300">Charts</h2>
+          <!-- POPULATE with the most useful visual for your findings -->
+        </section>
+
+        <!-- ============================================================
+             #findings : MAIN RESEARCH ARTIFACT
+             Write your synthesis here in whatever format best communicates
+             the findings. Every factual claim needs a source link:
+               <a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs">[domain]</a>
+
+             Use DaisyUI components freely — the agent knows them from training:
+               card / card-body        groups of related findings
+               alert alert-success/warning/error   verdict or recommendation
+               timeline timeline-vertical          chronological events
+               table table-zebra                   structured comparisons
+               badge badge-success/warning/error   confidence tags
+               collapse / accordion                expandable detail sections
+
+             Or just use plain headings + paragraphs + lists if that fits better.
+             There is no mandatory format.
+        ============================================================ -->
+        <section id="findings" class="mb-12">
+          <h2 class="text-xl font-bold mb-4 pb-3 border-b border-base-300">Findings</h2>
+          <!-- POPULATE with your synthesis -->
+        </section>
+
+        <!-- ============================================================
+             #confidence : EVIDENCE TABLE
+             One row per key claim. Use DaisyUI table + badge for tiers.
+             Curate to the 20-40 most important claims for long runs.
+        ============================================================ -->
+        <section id="confidence" class="mb-12">
+          <h2 class="text-xl font-bold mb-4 pb-3 border-b border-base-300">Evidence</h2>
+          <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm w-full">
+              <thead>
+                <tr>
+                  <th class="w-16">Conf.</th>
+                  <th>Claim</th>
+                  <th class="w-32">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- One <tr> per claim from evidence.md, e.g.: -->
+                <!-- <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>[Claim text]</td>
+                  <td><a href="[url]" target="_blank" rel="noopener" class="link link-primary text-xs">[domain]</a></td>
+                </tr> -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             #sources : ALL SOURCES
+             One <li> per unique URL from evidence.md.
+             Order by confidence desc, then freshness desc.
+        ============================================================ -->
+        <section id="sources" class="mb-12">
+          <h2 class="text-xl font-bold mb-4 pb-3 border-b border-base-300">Sources</h2>
+          <ul class="flex flex-col gap-2">
+            <!-- One item per source, e.g.: -->
+            <!-- <li class="flex items-center gap-3 bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm">
+              <span class="badge badge-success badge-sm shrink-0">high</span>
+              <div class="flex-1 min-w-0">
+                <a href="[url]" target="_blank" rel="noopener" class="link link-primary font-medium truncate block">[Title or domain]</a>
+                <span class="text-base-content/50 text-xs">[Freshness date]</span>
+              </div>
+            </li> -->
+          </ul>
+        </section>
+
+        <!-- ============================================================
+             #gaps : GAPS AND FOLLOW-UPS
+             What couldn't be found, conflicts that weren't resolved, and
+             recommended follow-up questions.
+        ============================================================ -->
+        <section id="gaps" class="mb-12">
+          <h2 class="text-xl font-bold mb-4 pb-3 border-b border-base-300">Gaps &amp; follow-up</h2>
+          <!-- Use alert-warning for gaps, alert-info for follow-up questions, e.g.: -->
+          <!-- <div role="alert" class="alert alert-warning mb-3">
+            <span>[Gap or unresolved conflict]</span>
+          </div>
+          <div role="alert" class="alert alert-info mb-3">
+            <span>[Recommended follow-up question]</span>
+          </div> -->
+        </section>
+      </main>
+    </div><!-- /drawer-content -->
+
+    <!-- SIDEBAR -->
+    <div class="drawer-side z-40">
+      <label for="sidebar-toggle" aria-label="close sidebar" class="drawer-overlay"></label>
+      <nav class="min-h-full w-56 bg-neutral text-neutral-content flex flex-col p-5 gap-1">
+        <div class="text-lg font-bold mb-5">Deep<span class="text-primary">Research</span></div>
+        <a href="#summary" class="btn btn-ghost btn-sm justify-start text-neutral-content/80 hover:text-neutral-content">Summary</a>
+        <a href="#charts" class="btn btn-ghost btn-sm justify-start text-neutral-content/80 hover:text-neutral-content">Charts</a>
+        <a href="#findings" class="btn btn-ghost btn-sm justify-start text-neutral-content/80 hover:text-neutral-content">Findings</a>
+        <a href="#confidence" class="btn btn-ghost btn-sm justify-start text-neutral-content/80 hover:text-neutral-content">Evidence</a>
+        <a href="#sources" class="btn btn-ghost btn-sm justify-start text-neutral-content/80 hover:text-neutral-content">Sources</a>
+        <a href="#gaps" class="btn btn-ghost btn-sm justify-start text-neutral-content/80 hover:text-neutral-content">Gaps</a>
+        <div class="mt-auto text-xs opacity-40 leading-relaxed border-t border-neutral-content/20 pt-4">
+          [DATE]<br>
+          [N_SOURCES] sources · [N_SEARCHES] searches<br>
+          Score: [SCORE]/12
+        </div>
+      </nav>
     </div>
-  </nav>
 
-  <!-- mobile top strip -->
-  <div class="mobile-bar">
-    <a href="#summary">Summary</a>
-    <a href="#charts">Charts</a>
-    <a href="#findings">Findings</a>
-    <a href="#confidence">Confidence</a>
-    <a href="#sources">Sources</a>
-    <a href="#gaps">Gaps</a>
-  </div>
-
-  <main>
-    <h1>[QUERY_TITLE]</h1>
-    <p class="meta">[DATE] &nbsp;·&nbsp; [N_SOURCES] sources &nbsp;·&nbsp; [QUERY_TYPE] query</p>
-
-    <!-- ============================================================
-         #summary : LANDING PAGE — put the answer here, not just scores.
-
-         1. headline-finding: 1-2 sentence direct answer to the query.
-            What did you find? What is the recommendation? Be specific.
-         2. key-insights: 4-6 substantive bullets, each with a source link.
-            These should be the most valuable findings — not restatements of the query.
-         3. score cards + donut: research quality metadata (below the content).
-         4. takeaways: 3-5 supporting details or nuances (below the scores).
-
-         Count CLAIM lines in evidence.md by tier for data-high/med/low/conf.
-    ============================================================ -->
-    <section id="summary">
-      <h2>Summary</h2>
-
-      <!-- Direct answer: 1-2 sentences -->
-      <p class="headline-finding">[HEADLINE_FINDING]</p>
-
-      <!-- Key insights: 4-6 sourced findings -->
-      <ul class="takeaways" id="key-insights">
-        <li>[INSIGHT_1] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
-        <li>[INSIGHT_2] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
-        <li>[INSIGHT_3] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
-        <li>[INSIGHT_4] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
-        <li>[INSIGHT_5] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
-      </ul>
-
-      <!-- Research quality metadata -->
-      <div class="total-score">Research quality: [SCORE] / 12</div>
-      <div class="summary-top">
-        <div style="flex:1">
-          <div class="score-grid">
-            <div class="score-card"><div class="num">[C]/3</div><div class="label">Completeness</div></div>
-            <div class="score-card"><div class="num">[A]/3</div><div class="label">Accuracy</div></div>
-            <div class="score-card"><div class="num">[R]/3</div><div class="label">Relevance</div></div>
-            <div class="score-card"><div class="num">[F]/3</div><div class="label">Artifact fit</div></div>
-          </div>
-        </div>
-        <div class="donut-wrap">
-          <div id="confidence-donut"
-            data-high="[COUNT_HIGH]"
-            data-med="[COUNT_MED]"
-            data-low="[COUNT_LOW]"
-            data-conf="[COUNT_CONF]"
-            class="donut"
-            title="Evidence confidence distribution">
-          </div>
-          <div class="donut-legend">
-            <span class="tag tag-high">high: [COUNT_HIGH]</span>
-            <span class="tag tag-med">medium: [COUNT_MED]</span>
-            <span class="tag tag-low">low: [COUNT_LOW]</span>
-            <span class="tag tag-conf">conflicted: [COUNT_CONF]</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Supporting nuances / caveats -->
-      <h3>Key takeaways</h3>
-      <ul class="takeaways">
-        <li>[TAKEAWAY_1]</li>
-        <li>[TAKEAWAY_2]</li>
-        <li>[TAKEAWAY_3]</li>
-        <li>[TAKEAWAY_4]</li>
-        <li>[TAKEAWAY_5]</li>
-      </ul>
-    </section>
-
-    <!-- ============================================================
-         #charts : QUERY-TYPE-SPECIFIC VISUALS
-         Pick the right chart(s) for your query type; remove the rest.
-         All charts use inline data-* attributes + the JS below: no libraries.
-
-         COMPARATIVE: horizontal comparison bars per dimension:
-           <div class="hbar-group">
-             <div class="hbar-label">[Dimension]</div>
-             <div class="hbar-row">
-               <span class="hbar-name">[Option]</span>
-               <div class="hbar-track">
-                 <div class="hbar" data-val="[0-100]" style="background:var(--high)"></div>
-               </div>
-               <span class="hbar-val">[display value]</span>
-             </div>
-           </div>
-
-         COMPARATIVE (3+ options, 4+ dimensions): heat-map matrix:
-           <div class="heatmap" style="grid-template-columns: 140px repeat([N], 1fr)">
-             <div class="hm-head"></div><div class="hm-head">[Option]</div>...
-             <div class="hm-cell-label">[Dimension]</div>
-             <div class="hm-cell tag-high">[value]</div>...
-           </div>
-
-         DECISION: vertical ranked bar chart (tallest = recommended):
-           <div class="bar-chart-wrap">
-             <div class="bar-chart">
-               <div class="bar-col">
-                 <div class="bar" data-val="[0-100]" style="background:var(--high)"></div>
-                 <div class="bar-label">[Option]</div>
-                 <div class="bar-score">[X]/10</div>
-               </div>
-             </div>
-             <div class="bar-chart-caption">Evidence-weighted score (0-10)</div>
-           </div>
-
-         TEMPORAL: SVG timeline (x proportional to year range):
-           <div class="timeline-wrap">
-           <svg class="timeline-svg" viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg">
-             <line x1="40" y1="80" x2="860" y2="80" stroke="var(--border)" stroke-width="2"/>
-             x = 40 + ((year - minYear) / (maxYear - minYear)) * 820
-             circle r: high=8 medium=6 low=4; conflicted: add stroke-dasharray="4 2"
-             alternate text y: above=58, below=108 (to avoid overlap)
-             wrap each circle in <a href="[source_url]" target="_blank" rel="noopener">
-           </svg></div>
-
-         EXPLORATORY / SYNTHESIS: concept cluster SVG (5-8 satellite nodes):
-           <div class="concept-wrap">
-           <svg class="concept-svg" viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
-             center node at (350,200) r=40; satellites at r=140 evenly-spaced angles
-             lines from center to each satellite
-             satellite border color = confidence tier (--high/--med/--low/--conf)
-           </svg></div>
-    ============================================================ -->
-    <section id="charts">
-      <h2>Charts</h2>
-      <!-- POPULATE with chart HTML for your query type (see comments above) -->
-    </section>
-
-    <!-- ============================================================
-         #findings : MAIN RESEARCH ARTIFACT
-         Write your synthesis here in whatever format best communicates the findings.
-         Every factual claim needs: <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>
-
-         Optional components available (see CSS):
-           .option-grid / .option-card (.option-card-verdict .positive/.neutral/.negative)
-           .verdict-box (.positive / .negative / .neutral)
-           .claim-list (.med / .low / .conf)
-           table.timeline-table  (narrow 2-col chronological)
-         Plain h3 + p + ul is also fine.
-    ============================================================ -->
-    <section id="findings">
-      <h2>Findings</h2>
-      <!-- POPULATE with your synthesis -->
-    </section>
-
-    <!-- ============================================================
-         #confidence : EVIDENCE TABLE
-         One row per claim from evidence.md (or a curated subset for long runs).
-         Ordered by importance; include all load-bearing claims.
-    ============================================================ -->
-    <section id="confidence">
-      <h2>Evidence confidence</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Claim</th><th>Source</th><th>Freshness</th><th>Confidence</th></tr></thead>
-          <tbody>
-            <!-- One <tr> per claim:
-              <tr>
-                <td>[claim text]</td>
-                <td><a href="[url]" target="_blank" rel="noopener" class="src-link">[domain.com]</a></td>
-                <td>[date or "unknown"]</td>
-                <td><span class="tag tag-high">high</span></td>
-              </tr>
-              tag classes: tag-high / tag-med / tag-low / tag-conf
-            -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ============================================================
-         #sources : UNIQUE URL LIST
-         One <li> per unique URL from evidence.md, ordered by confidence then freshness.
-    ============================================================ -->
-    <section id="sources">
-      <h2>Sources <small style="font-size:13px;font-weight:400;color:var(--muted)">([N_SOURCES] total)</small></h2>
-      <ol class="sources-list">
-        <!-- One <li> per URL:
-          <li>
-            <span class="src-num">[N]</span>
-            <a href="[full URL]" target="_blank" rel="noopener" class="src-link">[full URL]</a>
-            <span class="src-meta"><span class="tag tag-high">high</span> &nbsp; [date]</span>
-          </li>
-        -->
-      </ol>
-    </section>
-
-    <!-- ============================================================
-         #gaps : GAPS AND FOLLOW-UP QUESTIONS
-    ============================================================ -->
-    <section id="gaps">
-      <h2>Gaps &amp; follow-up</h2>
-      <h3>What couldn't be found</h3>
-      <ul class="gap-list">
-        <!-- <li>[gap description]</li> -->
-      </ul>
-      <h3>Follow-up questions</h3>
-      <ul class="followup-list">
-        <!-- <li>[follow-up question]</li> -->
-      </ul>
-    </section>
-  </main>
+  </div><!-- /drawer -->
 
   <script>
-    // Scroll-spy nav highlight
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('nav a');
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
-        }
-      });
-    }, { threshold: 0.3 });
-    sections.forEach(s => observer.observe(s));
-
-    // Confidence donut (conic-gradient from data-* counts)
+    // Confidence donut: render multi-segment conic-gradient
     const donut = document.getElementById('confidence-donut');
     if (donut) {
       const h = +(donut.dataset.high) || 0;
@@ -456,30 +288,30 @@
       const total = h + m + l + c || 1;
       const toDeg = n => (n / total) * 360;
       let a = 0;
-      const seg = (deg, color) => {
-        const s = `${color} ${a.toFixed(1)}deg ${(a + deg).toFixed(1)}deg`;
-        a += deg; return s;
-      };
-      const gradient = [
-        seg(toDeg(h), 'var(--high)'),
-        seg(toDeg(m), 'var(--med)'),
-        seg(toDeg(l), 'var(--low)'),
-        seg(toDeg(c), 'var(--conf)'),
-      ].join(', ');
-      donut.style.background = `conic-gradient(${gradient})`;
+      const seg = (deg, color) => { const s = `${color} ${a.toFixed(1)}deg ${(a+deg).toFixed(1)}deg`; a += deg; return s; };
+      donut.style.background = `conic-gradient(${[
+        seg(toDeg(h), '#16a34a'),
+        seg(toDeg(m), '#d97706'),
+        seg(toDeg(l), '#dc2626'),
+        seg(toDeg(c), '#7c3aed'),
+      ].join(', ')})`;
     }
 
-    // Animate bars on load
-    requestAnimationFrame(() => {
-      // Horizontal bars: data-val = 0-100 -> width %
-      document.querySelectorAll('.hbar[data-val]').forEach(b => {
-        b.style.width = (b.dataset.val || 0) + '%';
+    // Highlight active sidebar link on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l => {
+            const active = l.getAttribute('href') === '#' + e.target.id;
+            l.classList.toggle('bg-neutral-content/20', active);
+            l.classList.toggle('text-neutral-content', active);
+          });
+        }
       });
-      // Vertical bars: data-val = 0-100 -> height %
-      document.querySelectorAll('.bar[data-val]').forEach(b => {
-        b.style.height = (b.dataset.val || 0) + '%';
-      });
-    });
+    }, { threshold: 0.4 });
+    sections.forEach(s => observer.observe(s));
   </script>
 </body>
 </html>
