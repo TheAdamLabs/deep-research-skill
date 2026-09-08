@@ -246,45 +246,99 @@ YOUR TASK: Find sources that specifically address this gap. Return findings in e
 
 ## Phase 8: Dashboard
 
-**Do not generate the HTML structure from scratch.** Read the template file first, then write one complete filled-in `dashboard.html`.
+Write `[output-dir]/dashboard.html` from scratch in a single `Write` call.
 
-### Steps
+**Stack: DaisyUI 5 + Tailwind CSS 4 via CDN** (file requires internet to open).
+Full DaisyUI component reference: `.agents/skills/daisyui/` (read any component file if needed).
 
-1. **Read the template:**
-```bash
-cat [skill-directory]/dashboard-template.html
+### Page skeleton
+
+```html
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[Query title]: Deep Research</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    .donut{width:120px;height:120px;border-radius:50%;background:#e2e8f0;position:relative;flex-shrink:0;}
+    .donut::after{content:'';position:absolute;inset:22px;background:var(--color-base-100);border-radius:50%;}
+  </style>
+</head>
+<body class="bg-base-200 min-h-screen">
+  <div class="drawer lg:drawer-open">
+    <input id="nav" type="checkbox" class="drawer-toggle" />
+    <div class="drawer-content">
+      <div class="navbar bg-neutral text-neutral-content lg:hidden sticky top-0 z-50 shadow">
+        <label for="nav" class="btn btn-ghost btn-sm drawer-button">☰</label>
+        <span class="font-bold">Deep Research</span>
+      </div>
+      <main class="p-6 lg:p-10 max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold tracking-tight mb-1">[Query title]</h1>
+        <p class="text-base-content/60 text-sm mb-10">[Date] · [N] sources · [query type]</p>
+        <!-- sections: #summary #charts #findings #confidence #sources #gaps -->
+      </main>
+    </div>
+    <div class="drawer-side z-40">
+      <label for="nav" class="drawer-overlay"></label>
+      <nav class="min-h-full w-56 bg-neutral text-neutral-content flex flex-col p-5 gap-1">
+        <div class="text-lg font-bold mb-5">Deep<span class="text-primary">Research</span></div>
+        <a href="#summary"    class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Summary</a>
+        <a href="#charts"     class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Charts</a>
+        <a href="#findings"   class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Findings</a>
+        <a href="#confidence" class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Evidence</a>
+        <a href="#sources"    class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Sources</a>
+        <a href="#gaps"       class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Gaps</a>
+        <div class="mt-auto text-xs opacity-40 border-t border-neutral-content/20 pt-4 leading-relaxed">
+          [Date]<br>[N] sources · [N] searches<br>Score: [X]/12
+        </div>
+      </nav>
+    </div>
+  </div>
+  <script>
+    const d=document.getElementById('confidence-donut');
+    if(d){const h=+(d.dataset.high)||0,m=+(d.dataset.med)||0,l=+(d.dataset.low)||0,c=+(d.dataset.conf)||0;
+    const t=h+m+l+c||1;let a=0;
+    const seg=(deg,col)=>{const s=`${col} ${a.toFixed(1)}deg ${(a+deg).toFixed(1)}deg`;a+=deg;return s;};
+    const td=n=>(n/t)*360;
+    d.style.background=`conic-gradient(${[seg(td(h),'#16a34a'),seg(td(m),'#d97706'),seg(td(l),'#dc2626'),seg(td(c),'#7c3aed')].join(',')})`;}
+  </script>
+</body>
+</html>
 ```
-The skill directory is the directory containing this SKILL.md file (e.g. `/Users/you/.cursor/skills/deep-research/`).
 
-2. **Write the complete dashboard** to `[output-dir]/dashboard.html` in a single `Write` call. Populate every `[PLACEHOLDER]`. You have full freedom to adapt the HTML structure for your query type.
+### Section guide
 
-**Styling: the template uses DaisyUI 5 + Tailwind CSS 4 (loaded via CDN).** Use DaisyUI components for all UI elements -- the agent skill at `.agents/skills/daisyui/` has the full component reference if you need it. Key components for research dashboards:
-- `card` / `card-body`: group related findings
-- `alert alert-success/warning/error`: verdict, recommendation, or gap
-- `table table-zebra`: evidence and sources tables
-- `badge badge-success/warning/error/secondary`: confidence tier labels
-- `timeline timeline-vertical`: chronological events
-- `progress progress-primary`: comparison bars
-- `stats` / `stat`: score display (already in template)
+**`#summary`** -- put the answer first, scores second.
+1. Headline: `<div class="border-l-4 border-primary bg-base-100 rounded-r-xl px-5 py-4 font-medium leading-relaxed mb-6">` (1-2 sentence direct answer)
+2. Key insights: 4-6 `<li>` rows in `bg-base-100 rounded-xl border border-base-200 px-4 py-3`, each ending with a `<a class="link link-primary text-xs">` source link
+3. Scores: `<div class="stats stats-horizontal shadow bg-base-100 w-full">` with `stat` children (completeness / accuracy / relevance / artifact fit)
+4. Quality: `<div role="alert" class="alert alert-success">Research quality: X/12</div>`
+5. Donut: `<div id="confidence-donut" data-high="N" data-med="N" data-low="N" data-conf="N" class="donut">` in a flex row with a text legend
+6. Takeaways: 3-5 nuance bullets in the same row style as insights
 
-For SVG-based visuals (concept maps, timeline graphs): write custom inline SVG inside a `<div class="overflow-x-auto">` wrapper.
+**`#charts`** -- skip for simple queries. Good options:
+- `<progress class="progress progress-primary w-full" value="N" max="100">` for comparison bars
+- Inline `<svg>` in `<div class="overflow-x-auto">` for timelines or concept maps
 
-**What to populate in each section:**
+**`#findings`** -- free-form synthesis, best DaisyUI component for the data:
+- `card card-body` for grouped findings
+- `alert alert-success/warning/error` for a clear verdict or recommendation
+- `timeline timeline-vertical` for chronological events
+- `table table-zebra` for compact structured data (prefer cards for anything wider than 3 columns)
+- `collapse` / `accordion` for expandable detail sections
 
-| Section | Content |
-|---|---|
-| `<title>` and `<h1>` | Query title |
-| `.nav-meta` in sidebar | Date, source/search counts, score |
-| `#summary` | `[HEADLINE_FINDING]`: 1-2 sentence direct answer. Key insights list. Score placeholders. |
-| `#charts` | Best visual for your findings (skip entirely for simple queries) |
-| `#findings` | Your Phase 6 synthesis in the best DaisyUI layout for the data |
-| `#confidence` tbody | One `<tr>` per key claim with `badge` for confidence tier |
-| `#sources` | One `<li>` per unique URL, ordered by confidence then freshness |
-| `#gaps` | `alert-warning` per gap, `alert-info` per follow-up question |
+Every factual claim ends with: `<a href="URL" target="_blank" rel="noopener" class="link link-primary text-xs">[domain]</a>`
 
-**Source link rule:** every URL from `evidence.md` must appear as a real `<a href="..." target="_blank" rel="noopener" class="link link-primary">` link. Never render a URL as plain text.
+**`#confidence`** -- `<table class="table table-zebra table-sm w-full">`: columns are confidence (`<span class="badge badge-success/warning/error/secondary badge-sm">`), claim, source link. Curate to 20-40 key claims.
 
-3. **Open the dashboard:**
+**`#sources`** -- one `<li>` per unique URL. Include confidence badge and freshness date.
+
+**`#gaps`** -- `<div role="alert" class="alert alert-warning mb-3">` per gap; `alert-info` per follow-up question.
+
+Source link rule: every URL must be a real `<a href="..." target="_blank" rel="noopener" class="link link-primary">`. Never plain text.
+
 ```bash
 open [output-dir]/dashboard.html   # macOS
 ```
