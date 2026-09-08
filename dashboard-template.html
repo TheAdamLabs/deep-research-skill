@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>[QUERY_TITLE] -- Deep Research</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --nav-w: 230px;
+      --nav-bg: #0f172a;
+      --nav-text: #94a3b8;
+      --nav-active: #f8fafc;
+      --accent: #6366f1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --high: #16a34a; --high-bg: #dcfce7;
+      --med:  #b45309; --med-bg:  #fef3c7;
+      --low:  #dc2626; --low-bg:  #fee2e2;
+      --conf: #7c3aed; --conf-bg: #ede9fe;
+    }
+    body { font-family: system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* Sidebar nav (desktop) */
+    nav {
+      position: fixed; top: 0; left: 0; width: var(--nav-w);
+      height: 100vh; overflow-y: auto;
+      background: var(--nav-bg); padding: 28px 20px;
+      display: flex; flex-direction: column; gap: 4px;
+      z-index: 100;
+    }
+    .nav-brand { color: #f8fafc; font-weight: 700; font-size: 15px; margin-bottom: 20px; letter-spacing: -0.3px; }
+    .nav-brand span { color: var(--accent); }
+    nav a { color: var(--nav-text); text-decoration: none; padding: 7px 10px; border-radius: 6px; font-size: 13.5px; transition: background 0.15s, color 0.15s; }
+    nav a:hover, nav a.active { background: rgba(255,255,255,0.08); color: var(--nav-active); }
+    nav a.active { border-left: 3px solid var(--accent); padding-left: 7px; }
+    .nav-meta { margin-top: auto; font-size: 11px; color: #475569; line-height: 1.8; border-top: 1px solid #1e293b; padding-top: 16px; }
+
+    /* Mobile top bar */
+    .mobile-bar {
+      display: none; position: sticky; top: 0; z-index: 200;
+      background: var(--nav-bg); padding: 0 16px;
+      overflow-x: auto; white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .mobile-bar a { display: inline-block; color: var(--nav-text); text-decoration: none; padding: 14px 12px; font-size: 13px; }
+    .mobile-bar a:hover { color: var(--nav-active); }
+
+    /* Main content */
+    main { margin-left: var(--nav-w); padding: 48px 52px; max-width: calc(var(--nav-w) + 860px); }
+    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 6px; }
+    h2 { font-size: 18px; font-weight: 600; margin: 40px 0 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    h3 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; color: var(--muted); }
+    .meta { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+    /* Score cards */
+    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 8px; }
+    .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .score-card .num { font-size: 30px; font-weight: 700; color: var(--accent); }
+    .score-card .label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .total-score { background: var(--accent); color: white; border-radius: 10px; padding: 14px 20px; font-weight: 600; font-size: 15px; text-align: center; margin-bottom: 24px; }
+
+    /* Summary layout with donut */
+    .summary-top { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
+
+    /* Confidence donut */
+    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; flex-shrink: 0; }
+    .donut { width: 110px; height: 110px; border-radius: 50%; background: var(--border); position: relative; }
+    .donut::after { content: ''; position: absolute; inset: 22px; border-radius: 50%; background: var(--bg); }
+    .donut-legend { display: flex; flex-direction: column; gap: 4px; }
+    .donut-legend span { font-size: 12px; }
+
+    /* Takeaways */
+    .takeaways { list-style: none; padding: 0; margin: 0 0 16px; }
+    .takeaways li { display: flex; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 14.5px; }
+    .takeaways li::before { content: "->"; color: var(--accent); flex-shrink: 0; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead th { background: #f1f5f9; padding: 11px 14px; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+    tbody tr:hover { background: #f8fafc; }
+    td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+
+    /* Confidence tags */
+    .tag { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 600; }
+    .tag-high { background: var(--high-bg); color: var(--high); }
+    .tag-med  { background: var(--med-bg);  color: var(--med); }
+    .tag-low  { background: var(--low-bg);  color: var(--low); }
+    .tag-conf { background: var(--conf-bg); color: var(--conf); }
+
+    /* Source links */
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: start; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 13.5px; }
+    .src-num { color: var(--muted); font-size: 12px; padding-top: 2px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .src-meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    /* Gap / follow-up cards */
+    .gap-list { list-style: none; padding: 0; margin: 0; }
+    .gap-list li { padding: 10px 14px 10px 38px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
+    .gap-list li::before { content: "?"; position: absolute; left: 14px; color: var(--muted); font-weight: 700; }
+    .followup-list { list-style: none; padding: 0; margin: 0; }
+    .followup-list li { padding: 10px 14px 10px 38px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 6px; font-size: 14px; position: relative; }
+    .followup-list li::before { content: "->"; position: absolute; left: 14px; color: #3b82f6; font-weight: 700; }
+
+    /* Horizontal bar chart (comparison bars) */
+    .hbar-group { margin-bottom: 18px; }
+    .hbar-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .hbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+    .hbar-name { font-size: 13px; min-width: 120px; flex-shrink: 0; color: var(--text); }
+    .hbar-track { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+    .hbar { height: 100%; border-radius: 5px; width: 0; transition: width 0.6s ease; }
+    .hbar-val { font-size: 12px; color: var(--muted); min-width: 40px; text-align: right; }
+
+    /* Vertical bar chart (decision ranking) */
+    .bar-chart-wrap { margin: 16px 0; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 0 4px; border-bottom: 2px solid var(--border); }
+    .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+    .bar { width: 100%; border-radius: 4px 4px 0 0; height: 0; transition: height 0.6s ease; min-height: 4px; }
+    .bar-label { font-size: 12px; text-align: center; margin-top: 8px; color: var(--text); font-weight: 500; word-break: break-word; }
+    .bar-score { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .bar-chart-caption { font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+    /* Heat-map matrix */
+    .heatmap { display: grid; gap: 3px; margin: 12px 0; }
+    .hm-head { font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 10px; text-align: center; }
+    .hm-cell-label { font-size: 12px; font-weight: 500; color: var(--text); padding: 8px 10px; display: flex; align-items: center; }
+    .hm-cell { border-radius: 4px; padding: 7px 10px; font-size: 12px; text-align: center; }
+    .hm-cell.tag-high { background: var(--high-bg); color: var(--high); }
+    .hm-cell.tag-med  { background: var(--med-bg);  color: var(--med); }
+    .hm-cell.tag-low  { background: var(--low-bg);  color: var(--low); }
+    .hm-cell.tag-conf { background: var(--conf-bg); color: var(--conf); }
+
+    /* SVG timeline */
+    .timeline-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; padding: 8px 0; }
+    .timeline-svg { width: 100%; min-width: 600px; display: block; }
+
+    /* Concept cluster SVG */
+    .concept-wrap { overflow-x: auto; margin: 12px 0; }
+    .concept-svg { width: 100%; display: block; max-width: 700px; margin: 0 auto; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav { display: none; }
+      .mobile-bar { display: block; }
+      main { margin-left: 0; padding: 24px 18px; }
+      .score-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 20px; }
+      .sources-list li { grid-template-columns: 20px 1fr; }
+      .src-meta { display: none; }
+      .hbar-name { min-width: 80px; }
+      .summary-top { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- desktop sidebar -->
+  <nav id="sidebar">
+    <div class="nav-brand">Deep <span>Research</span></div>
+    <a href="#summary">Summary</a>
+    <a href="#charts">Charts</a>
+    <a href="#findings">Findings</a>
+    <a href="#confidence">Confidence</a>
+    <a href="#sources">Sources</a>
+    <a href="#gaps">Gaps</a>
+    <div class="nav-meta">
+      [DATE]<br>
+      [N_SOURCES] sources · [N_SEARCHES] searches<br>
+      Score [SCORE]/12
+    </div>
+  </nav>
+
+  <!-- mobile top strip -->
+  <div class="mobile-bar">
+    <a href="#summary">Summary</a>
+    <a href="#charts">Charts</a>
+    <a href="#findings">Findings</a>
+    <a href="#confidence">Confidence</a>
+    <a href="#sources">Sources</a>
+    <a href="#gaps">Gaps</a>
+  </div>
+
+  <main>
+    <h1>[QUERY_TITLE]</h1>
+    <p class="meta">[DATE] &nbsp;·&nbsp; [N_SOURCES] sources &nbsp;·&nbsp; [QUERY_TYPE] query</p>
+
+    <!-- ============================================================
+         #summary
+         Fill in: scores, donut counts, 3 key takeaways
+    ============================================================ -->
+    <section id="summary">
+      <h2>Summary</h2>
+      <div class="total-score">Overall score: [SCORE] / 12</div>
+      <div class="summary-top">
+        <div style="flex:1">
+          <div class="score-grid">
+            <div class="score-card"><div class="num">[C]/3</div><div class="label">Completeness</div></div>
+            <div class="score-card"><div class="num">[A]/3</div><div class="label">Accuracy</div></div>
+            <div class="score-card"><div class="num">[R]/3</div><div class="label">Relevance</div></div>
+            <div class="score-card"><div class="num">[F]/3</div><div class="label">Artifact fit</div></div>
+          </div>
+        </div>
+        <!-- Count CLAIM lines in evidence.md by confidence tier for data-* values -->
+        <div class="donut-wrap">
+          <div id="confidence-donut"
+            data-high="[COUNT_HIGH]"
+            data-med="[COUNT_MED]"
+            data-low="[COUNT_LOW]"
+            data-conf="[COUNT_CONF]"
+            class="donut"
+            title="Evidence confidence distribution">
+          </div>
+          <div class="donut-legend">
+            <span class="tag tag-high">high: [COUNT_HIGH]</span>
+            <span class="tag tag-med">medium: [COUNT_MED]</span>
+            <span class="tag tag-low">low: [COUNT_LOW]</span>
+            <span class="tag tag-conf">conflicted: [COUNT_CONF]</span>
+          </div>
+        </div>
+      </div>
+      <h3>Key takeaways</h3>
+      <ul class="takeaways">
+        <!-- 3 most important findings; each ends with [[domain]](url) source link -->
+        <li>[TAKEAWAY_1]</li>
+        <li>[TAKEAWAY_2]</li>
+        <li>[TAKEAWAY_3]</li>
+      </ul>
+    </section>
+
+    <!-- ============================================================
+         #charts  -- QUERY-TYPE-SPECIFIC VISUALS
+         Pick the right chart(s) for your query type; remove the rest.
+         All charts use inline data-* attributes + the JS below -- no libraries.
+
+         COMPARATIVE -- horizontal comparison bars per dimension:
+           <div class="hbar-group">
+             <div class="hbar-label">[Dimension]</div>
+             <div class="hbar-row">
+               <span class="hbar-name">[Option]</span>
+               <div class="hbar-track">
+                 <div class="hbar" data-val="[0-100]" style="background:var(--high)"></div>
+               </div>
+               <span class="hbar-val">[display value]</span>
+             </div>
+           </div>
+
+         COMPARATIVE (3+ options, 4+ dimensions) -- heat-map matrix:
+           <div class="heatmap" style="grid-template-columns: 140px repeat([N], 1fr)">
+             <div class="hm-head"></div><div class="hm-head">[Option]</div>...
+             <div class="hm-cell-label">[Dimension]</div>
+             <div class="hm-cell tag-high">[value]</div>...
+           </div>
+
+         DECISION -- vertical ranked bar chart (tallest = recommended):
+           <div class="bar-chart-wrap">
+             <div class="bar-chart">
+               <div class="bar-col">
+                 <div class="bar" data-val="[0-100]" style="background:var(--high)"></div>
+                 <div class="bar-label">[Option]</div>
+                 <div class="bar-score">[X]/10</div>
+               </div>
+             </div>
+             <div class="bar-chart-caption">Evidence-weighted score (0-10)</div>
+           </div>
+
+         TEMPORAL -- SVG timeline (x proportional to year range):
+           <div class="timeline-wrap">
+           <svg class="timeline-svg" viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg">
+             <line x1="40" y1="80" x2="860" y2="80" stroke="var(--border)" stroke-width="2"/>
+             x = 40 + ((year - minYear) / (maxYear - minYear)) * 820
+             circle r: high=8 medium=6 low=4; conflicted: add stroke-dasharray="4 2"
+             alternate text y: above=58, below=108 (to avoid overlap)
+             wrap each circle in <a href="[source_url]" target="_blank" rel="noopener">
+           </svg></div>
+
+         EXPLORATORY / SYNTHESIS -- concept cluster SVG (5-8 satellite nodes):
+           <div class="concept-wrap">
+           <svg class="concept-svg" viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
+             center node at (350,200) r=40; satellites at r=140 evenly-spaced angles
+             lines from center to each satellite
+             satellite border color = confidence tier (--high/--med/--low/--conf)
+           </svg></div>
+    ============================================================ -->
+    <section id="charts">
+      <h2>Charts</h2>
+      <!-- POPULATE with chart HTML for your query type (see comments above) -->
+    </section>
+
+    <!-- ============================================================
+         #findings  -- MAIN RESEARCH ARTIFACT
+         Populate directly from your Phase 6 synthesis.
+         Query-type formats:
+           comparative  -> comparison table with source links per cell
+           temporal     -> events table + key turning points
+           decision     -> recommendation + why + risks
+           exploratory  -> high-confidence findings + contested + couldn't find
+         Every factual claim must have an inline [[domain]](url) source link.
+         For tables: wrap in <div class="table-wrap"><table>...</table></div>
+         Source links in cells: <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>
+    ============================================================ -->
+    <section id="findings">
+      <h2>Findings</h2>
+      <!-- POPULATE with Phase 6 synthesis output -->
+    </section>
+
+    <!-- ============================================================
+         #confidence  -- EVIDENCE TABLE
+         One row per claim from evidence.md (or a curated subset for long runs).
+         Ordered by importance; include all load-bearing claims.
+    ============================================================ -->
+    <section id="confidence">
+      <h2>Evidence confidence</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Claim</th><th>Source</th><th>Freshness</th><th>Confidence</th></tr></thead>
+          <tbody>
+            <!-- One <tr> per claim:
+              <tr>
+                <td>[claim text]</td>
+                <td><a href="[url]" target="_blank" rel="noopener" class="src-link">[domain.com]</a></td>
+                <td>[date or "unknown"]</td>
+                <td><span class="tag tag-high">high</span></td>
+              </tr>
+              tag classes: tag-high / tag-med / tag-low / tag-conf
+            -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         #sources  -- UNIQUE URL LIST
+         One <li> per unique URL from evidence.md, ordered by confidence then freshness.
+    ============================================================ -->
+    <section id="sources">
+      <h2>Sources <small style="font-size:13px;font-weight:400;color:var(--muted)">([N_SOURCES] total)</small></h2>
+      <ol class="sources-list">
+        <!-- One <li> per URL:
+          <li>
+            <span class="src-num">[N]</span>
+            <a href="[full URL]" target="_blank" rel="noopener" class="src-link">[full URL]</a>
+            <span class="src-meta"><span class="tag tag-high">high</span> &nbsp; [date]</span>
+          </li>
+        -->
+      </ol>
+    </section>
+
+    <!-- ============================================================
+         #gaps  -- GAPS AND FOLLOW-UP QUESTIONS
+    ============================================================ -->
+    <section id="gaps">
+      <h2>Gaps &amp; follow-up</h2>
+      <h3>What couldn't be found</h3>
+      <ul class="gap-list">
+        <!-- <li>[gap description]</li> -->
+      </ul>
+      <h3>Follow-up questions</h3>
+      <ul class="followup-list">
+        <!-- <li>[follow-up question]</li> -->
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    // --- Scroll-spy nav highlight ---
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { threshold: 0.3 });
+    sections.forEach(s => observer.observe(s));
+
+    // --- Confidence donut (conic-gradient from data-* counts) ---
+    const donut = document.getElementById('confidence-donut');
+    if (donut) {
+      const h = +(donut.dataset.high) || 0;
+      const m = +(donut.dataset.med)  || 0;
+      const l = +(donut.dataset.low)  || 0;
+      const c = +(donut.dataset.conf) || 0;
+      const total = h + m + l + c || 1;
+      const toDeg = n => (n / total) * 360;
+      let a = 0;
+      const seg = (deg, color) => {
+        const s = `${color} ${a.toFixed(1)}deg ${(a + deg).toFixed(1)}deg`;
+        a += deg; return s;
+      };
+      const gradient = [
+        seg(toDeg(h), 'var(--high)'),
+        seg(toDeg(m), 'var(--med)'),
+        seg(toDeg(l), 'var(--low)'),
+        seg(toDeg(c), 'var(--conf)'),
+      ].join(', ');
+      donut.style.background = `conic-gradient(${gradient})`;
+    }
+
+    // --- Animate bars on load ---
+    requestAnimationFrame(() => {
+      // Horizontal bars: data-val = 0-100 -> width %
+      document.querySelectorAll('.hbar[data-val]').forEach(b => {
+        b.style.width = (b.dataset.val || 0) + '%';
+      });
+      // Vertical bars: data-val = 0-100 -> height %
+      document.querySelectorAll('.bar[data-val]').forEach(b => {
+        b.style.height = (b.dataset.val || 0) + '%';
+      });
+    });
+  </script>
+</body>
+</html>

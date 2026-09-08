@@ -4,7 +4,7 @@ A [Cursor Agent Skill](https://docs.cursor.com/agent/skills) for deep, multi-ste
 
 ## Install
 
-The `SKILL.md` format is compatible with both Cursor and Claude Code. Install path differs by harness.
+The skill requires two files: `SKILL.md` (instructions) and `dashboard-template.html` (the visual output scaffold). Both must be in the same directory.
 
 **Cursor - personal** (all projects):
 
@@ -12,6 +12,8 @@ The `SKILL.md` format is compatible with both Cursor and Claude Code. Install pa
 mkdir -p ~/.cursor/skills/deep-research
 curl -o ~/.cursor/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
+curl -o ~/.cursor/skills/deep-research/dashboard-template.html \
+  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 **Cursor - project** (shared via `.cursor/skills/`):
@@ -20,6 +22,8 @@ curl -o ~/.cursor/skills/deep-research/SKILL.md \
 mkdir -p .cursor/skills/deep-research
 curl -o .cursor/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
+curl -o .cursor/skills/deep-research/dashboard-template.html \
+  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 **Claude Code - personal** (all projects):
@@ -28,6 +32,8 @@ curl -o .cursor/skills/deep-research/SKILL.md \
 mkdir -p ~/.claude/skills/deep-research
 curl -o ~/.claude/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
+curl -o ~/.claude/skills/deep-research/dashboard-template.html \
+  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 **Claude Code - project** (shared via `.claude/skills/`):
@@ -36,6 +42,8 @@ curl -o ~/.claude/skills/deep-research/SKILL.md \
 mkdir -p .claude/skills/deep-research
 curl -o .claude/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
+curl -o .claude/skills/deep-research/dashboard-template.html \
+  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 Start a new chat to pick up the skill. No restart needed in Claude Code (skills hot-reload).
@@ -48,7 +56,7 @@ Start a new chat to pick up the skill. No restart needed in Claude Code (skills 
 Use the deep-research skill to compare pricing models for B2B SaaS infrastructure tools
 ```
 
-The skill decides what files to produce based on query complexity. Results are saved to a timestamped directory under `research/`; chat output is always a short summary block pointing to the files.
+Every run produces a single `dashboard.html` in a timestamped directory under `research/`. Chat output is always a short summary block pointing to it. An intermediate `evidence.md` is written during the run as a pipeline artifact (not the primary deliverable).
 
 ## Architecture
 
@@ -65,11 +73,11 @@ Main agent: merge evidence -> gap analysis
     |
     +-- [parallel, if gaps] Gap subagent(s)
     |
-Main agent: artifact -> self-score (0-12)
+Main agent: synthesis (held in context) -> self-score (0-12)
     |
     +-- [if score 7-9] Patch subagent -> re-score
     |
-Main agent: dashboard (if warranted) -> summary to chat
+Main agent: read dashboard-template.html -> write dashboard.html -> open -> summary to chat
 ```
 
 ## License
