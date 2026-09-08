@@ -1,652 +1,691 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>deep-research skill — Usefulness &amp; Uniqueness</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    :root {
-      --nav-w: 234px;
-      --nav-bg: #0f172a;
-      --nav-text: #94a3b8;
-      --nav-active: #f8fafc;
-      --accent: #6366f1;
-      --accent-light: #818cf8;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #1e293b;
-      --muted: #64748b;
-      --high: #16a34a; --high-bg: #dcfce7;
-      --med:  #b45309; --med-bg:  #fef3c7;
-      --low:  #dc2626; --low-bg:  #fee2e2;
-      --conf: #7c3aed; --conf-bg: #ede9fe;
-      --yes-bg: #dbeafe; --yes: #1d4ed8;
-      --no-bg: #f1f5f9; --no: #475569;
-      --part-bg: #fef9c3; --part: #854d0e;
-    }
-    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
-
-    /* Sidebar nav (desktop) */
-    nav {
-      position: fixed; top: 0; left: 0; width: var(--nav-w);
-      height: 100vh; overflow-y: auto;
-      background: var(--nav-bg); padding: 28px 20px 20px;
-      display: flex; flex-direction: column; gap: 2px;
-      z-index: 100;
-    }
-    .nav-brand { color: #f8fafc; font-weight: 700; font-size: 13px; margin-bottom: 4px; letter-spacing: -0.2px; }
-    .nav-brand span { color: var(--accent-light); }
-    .nav-sub { font-size: 10px; color: #475569; margin-bottom: 22px; }
-    .nav-section { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #334155; margin: 14px 0 4px; padding-left: 10px; }
-    nav a { color: var(--nav-text); text-decoration: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; transition: background 0.12s, color 0.12s; border-left: 2px solid transparent; }
-    nav a:hover { background: rgba(255,255,255,0.06); color: #cbd5e1; }
-    nav a.active { background: rgba(99,102,241,0.12); color: var(--nav-active); border-left-color: var(--accent); }
-    .nav-meta { margin-top: auto; padding-top: 16px; border-top: 1px solid #1e293b; font-size: 10px; color: #475569; line-height: 1.9; }
-    .nav-score { font-size: 15px; font-weight: 700; color: var(--accent-light); }
-
-    /* Mobile top bar */
-    .mobile-bar {
-      display: none; position: sticky; top: 0; z-index: 200;
-      background: var(--nav-bg); overflow-x: auto; white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      scrollbar-width: none;
-    }
-    .mobile-bar::-webkit-scrollbar { display: none; }
-    .mobile-bar a { display: inline-block; color: var(--nav-text); text-decoration: none; padding: 13px 14px; font-size: 12px; }
-    .mobile-bar a:hover, .mobile-bar a.active { color: #f8fafc; }
-
-    /* Main content */
-    main { margin-left: var(--nav-w); padding: 48px 56px 80px; max-width: calc(var(--nav-w) + 900px); }
-    section { margin-bottom: 60px; }
-    h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 6px; }
-    h2 { font-size: 16px; font-weight: 600; margin: 0 0 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: var(--text); }
-    h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
-    p { font-size: 13px; line-height: 1.75; color: #374151; margin: 0 0 10px; }
-    .meta { color: var(--muted); font-size: 12px; margin-bottom: 36px; }
-    a { color: var(--accent); }
-
-    /* Score strip */
-    .total-bar { background: linear-gradient(90deg, var(--accent) 0%, #8b5cf6 100%); color: white; border-radius: 10px; padding: 14px 22px; font-weight: 600; font-size: 13px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; }
-    .total-bar .score-big { font-size: 18px; font-weight: 800; }
-    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
-    .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-    .score-card .num { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 4px; }
-    .score-card .lbl { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
-
-    /* Takeaways */
-    .takeaways { list-style: none; padding: 0; margin: 0 0 18px; }
-    .takeaways li { display: flex; gap: 10px; padding: 11px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; }
-    .takeaways li::before { content: "→"; color: var(--accent); flex-shrink: 0; font-weight: 700; }
-
-    /* Verdict cards */
-    .verdict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .verdict-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-    .verdict-card .vlabel { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 8px; }
-    .verdict-card p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--text); }
-    .risk-card { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 16px 20px; }
-    .risk-card p { color: #9a3412; margin: 0; font-size: 13px; line-height: 1.65; }
-
-    /* Tables */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid var(--border); margin: 0 0 12px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--surface); }
-    thead th { background: #f1f5f9; padding: 10px 13px; text-align: left; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; border-bottom: 1px solid var(--border); }
-    tbody tr:hover td { background: #fafafa; }
-    td { padding: 10px 13px; border-top: 1px solid #f1f5f9; vertical-align: middle; }
-    td:first-child { font-weight: 500; color: var(--text); white-space: nowrap; }
-    .comp-table td:first-child { white-space: normal; font-weight: 500; }
-
-    /* Confidence / badge tags */
-    .tag { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
-    .tag-high { background: var(--high-bg); color: var(--high); }
-    .tag-med  { background: var(--med-bg);  color: var(--med); }
-    .tag-low  { background: var(--low-bg);  color: var(--low); }
-    .tag-conf { background: var(--conf-bg); color: var(--conf); }
-    .tag-yes  { background: var(--yes-bg);  color: var(--yes); }
-    .tag-no   { background: var(--no-bg);   color: var(--no); }
-    .tag-part { background: var(--part-bg); color: var(--part); }
-
-    /* Finding blocks */
-    .finding { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; margin-bottom: 12px; }
-    .finding .flabel { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
-    .finding p { margin: 0; font-size: 13px; line-height: 1.7; }
-
-    /* Sources list */
-    .sources-list { list-style: none; padding: 0; margin: 0; }
-    .sources-list li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: start; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
-    .src-num { color: var(--muted); font-size: 11px; padding-top: 2px; font-weight: 600; }
-    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; font-size: 12px; line-height: 1.5; }
-    .src-link:hover { text-decoration: underline; }
-    .src-meta { font-size: 10.5px; color: var(--muted); white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-
-    /* Gap / follow-up */
-    .gap-list, .followup-list { list-style: none; padding: 0; margin: 0 0 16px; }
-    .gap-list li { padding: 10px 14px 10px 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 13px; position: relative; color: #374151; }
-    .gap-list li::before { content: "?"; position: absolute; left: 15px; color: var(--muted); font-weight: 700; font-size: 13px; }
-    .followup-list li { padding: 10px 14px 10px 40px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; margin-bottom: 6px; font-size: 13px; position: relative; color: #1e3a5f; }
-    .followup-list li::before { content: "→"; position: absolute; left: 15px; color: #3b82f6; font-weight: 700; }
-
-    /* New badge */
-    .badge-new { display: inline-block; padding: 1px 7px; border-radius: 100px; font-size: 9.5px; font-weight: 700; background: #fef08a; color: #854d0e; vertical-align: middle; margin-left: 5px; letter-spacing: 0.3px; }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      nav { display: none; }
-      .mobile-bar { display: block; }
-      main { margin-left: 0; padding: 20px 16px 60px; }
-      .score-grid { grid-template-columns: repeat(2, 1fr); }
-      .verdict-grid { grid-template-columns: 1fr; }
-      h1 { font-size: 17px; }
-      h2 { font-size: 14px; }
-      .total-bar { flex-direction: column; gap: 4px; text-align: center; }
-      .sources-list li { grid-template-columns: 22px 1fr; }
-      .src-meta { display: none; }
-      td:first-child { white-space: normal; min-width: 90px; }
-    }
-    @media (max-width: 480px) {
-      main { padding: 16px 12px 50px; }
-      .score-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-      .score-card { padding: 14px 10px; }
-      .score-card .num { font-size: 18px; }
-    }
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    .donut{width:120px;height:120px;border-radius:50%;background:#e2e8f0;position:relative;flex-shrink:0;}
+    .donut::after{content:'';position:absolute;inset:22px;background:var(--color-base-100);border-radius:50%;}
+    section { scroll-margin-top: 1.5rem; }
   </style>
 </head>
-<body>
+<body class="bg-base-200 min-h-screen">
+  <div class="drawer lg:drawer-open">
+    <input id="nav" type="checkbox" class="drawer-toggle" />
 
-  <!-- desktop sidebar -->
-  <nav id="sidebar">
-    <div class="nav-brand">Deep <span>Research</span></div>
-    <div class="nav-sub">2026-09-08</div>
-    <div class="nav-section">Navigation</div>
-    <a href="#summary">Summary</a>
-    <a href="#verdict">Verdict</a>
-    <a href="#comparison">Comparison table</a>
-    <a href="#findings">Key findings</a>
-    <a href="#confidence">Evidence confidence</a>
-    <a href="#sources">Sources</a>
-    <a href="#gaps">Gaps &amp; follow-up</a>
-    <div class="nav-meta">
-      2026-09-08<br>
-      70+ sources · 8 subagents<br>
-      268 claims · 40+ searches<br>
-      Score <span class="nav-score">12</span>/12
+    <!-- page content -->
+    <div class="drawer-content">
+      <!-- mobile navbar -->
+      <div class="navbar bg-neutral text-neutral-content lg:hidden sticky top-0 z-50 shadow">
+        <label for="nav" class="btn btn-ghost btn-sm drawer-button mr-2">☰</label>
+        <span class="font-bold text-sm">Deep Research</span>
+      </div>
+
+      <main class="p-6 lg:p-10 max-w-4xl mx-auto">
+
+        <h1 class="text-3xl font-bold tracking-tight mb-1">deep-research skill — Usefulness &amp; Uniqueness</h1>
+        <p class="text-base-content/60 text-sm mb-10">Sep 8, 2026 · 70+ sources · Score: 12/12</p>
+
+        <!-- ── SUMMARY ─────────────────────────────────────────────────────── -->
+        <section id="summary" class="mb-16">
+          <h2 class="text-xl font-semibold border-b border-base-300 pb-3 mb-6">Summary</h2>
+
+          <div class="border-l-4 border-primary bg-base-100 rounded-r-xl px-5 py-4 font-medium leading-relaxed mb-6 text-sm">
+            The deep-research skill is <strong>genuinely useful for developers who need auditable, file-based research artifacts</strong> that live alongside code. Its uniqueness is <strong>integrative, not algorithmic</strong>: no competitor ships the full five-pattern stack (parallel DAG subagents, per-claim atomic evidence, plan pre-mortem, self-scoring loop, IDE-native SKILL.md delivery) as one installable workflow spec — as of September 8, 2026.
+          </div>
+
+          <ul class="flex flex-col gap-2 mb-8">
+            <li class="bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm leading-relaxed">
+              <strong>Useful for a specific audience:</strong> Developers doing in-project research, competitive analysis, or architecture decisions where output needs to live alongside code and be auditable. Developer sentiment (HN/Reddit Aug-Sep 2026) confirms a hybrid preference: chat for exploration, files for durable truth. Low value for fast ad-hoc lookups.
+              <a href="https://stangeli.substack.com/p/building-a-research-environment-that" target="_blank" rel="noopener" class="link link-primary text-xs ml-1">[stangeli.substack.com]</a>
+            </li>
+            <li class="bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm leading-relaxed">
+              <strong>Genuinely unique combination:</strong> No alternative ships all six patterns — IDE artifact delivery, per-claim atomic confidence with full URLs, parallel DAG subagents, plan pre-mortem, self-scoring patch loop, and SKILL.md portability — as one installable spec. The Perplexity Agent API (replacing Sonar API Sep 27, 2026) is the closest gap-narrowing move, but still produces no atomic CLAIM/SOURCE/FRESHNESS/CONFIDENCE evidence file.
+              <a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener" class="link link-primary text-xs ml-1">[docs.perplexity.ai]</a>
+            </li>
+            <li class="bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm leading-relaxed">
+              <strong>Individual patterns are academically validated</strong> (Flash-Searcher, PreFlect, DeepVerifier, LedgerMind, ArcticSwarm, DualStake) but no paper or tool combines them. A new Jul-Sep 2026 wave (Interaction Tax, SILO-BENCH) cautions that multi-agent gains are conditional on structured isolation — naive coordination can erase diversity.
+              <a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener" class="link link-primary text-xs ml-1">[arxiv.org]</a>
+            </li>
+            <li class="bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm leading-relaxed">
+              <strong>Citation quality gap is real and persistent:</strong> Haus Research audit (Sep 2, 2026) found 34.7% of Perplexity citation markers fail a numerical accuracy check. DeepTRACE ranking: ChatGPT GPT-5 79.1% citation accuracy, Claude Opus 4.5 77%, Perplexity 58.0%, Gemini 40.3%. deep-research skill enforces a full URL per atomic claim — no alternative does this by default.
+              <a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="link link-primary text-xs ml-1">[hausresearch.com]</a>
+            </li>
+            <li class="bg-base-100 rounded-xl border border-base-200 px-4 py-3 text-sm leading-relaxed">
+              <strong>Gemini Max added MCP, but with a regression:</strong> Gemini Deep Research Max launched MCP support and native chart generation (~160 searches/task), but a Sep 4, 2026 regression caused MCP tools to be listed but never invoked (fix promised Sep 7). Perplexity Agent API is the more durable structural threat — but both still lack the atomic evidence pipeline.
+              <a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener" class="link link-primary text-xs ml-1">[support.google.com]</a>
+            </li>
+          </ul>
+        </section>
+
+        <!-- ── CHARTS ─────────────────────────────────────────────────────── -->
+        <section id="charts" class="mb-16">
+          <h2 class="text-xl font-semibold border-b border-base-300 pb-3 mb-6">Charts</h2>
+
+          <h3 class="font-semibold text-sm text-base-content/60 uppercase tracking-wider mb-3">Citation accuracy by tool (DeepTRACE + Haus, Sep 2026)</h3>
+          <div class="bg-base-100 rounded-xl border border-base-200 p-5 mb-6 flex flex-col gap-3 text-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-40 shrink-0 text-xs font-medium">ChatGPT GPT-5</span>
+              <progress class="progress progress-success flex-1" value="79" max="100"></progress>
+              <span class="w-10 text-right text-xs font-mono">79.1%</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-40 shrink-0 text-xs font-medium">Claude Opus 4.5</span>
+              <progress class="progress progress-info flex-1" value="77" max="100"></progress>
+              <span class="w-10 text-right text-xs font-mono">77%</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-40 shrink-0 text-xs font-medium">Perplexity</span>
+              <progress class="progress progress-warning flex-1" value="58" max="100"></progress>
+              <span class="w-10 text-right text-xs font-mono">58.0%</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-40 shrink-0 text-xs font-medium">Gemini Deep Research</span>
+              <progress class="progress progress-error flex-1" value="40" max="100"></progress>
+              <span class="w-10 text-right text-xs font-mono">40.3%</span>
+            </div>
+            <p class="text-xs text-base-content/50 mt-1">Source: <a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener" class="link link-primary">arxiv.org/DeepTRACE</a> (Sep 2025 snapshot). Perplexity Haus audit (numeric claim accuracy): 34.7% failure rate — different methodology, conflicted with DeepTRACE.</p>
+          </div>
+
+          <h3 class="font-semibold text-sm text-base-content/60 uppercase tracking-wider mb-3">Feature coverage: deep-research skill vs alternatives</h3>
+          <div class="overflow-x-auto rounded-xl border border-base-200 mb-6">
+            <table class="table table-sm bg-base-100 w-full">
+              <thead>
+                <tr class="text-xs">
+                  <th>Feature</th>
+                  <th class="text-center">deep-research</th>
+                  <th class="text-center">ChatGPT DR</th>
+                  <th class="text-center">Perplexity</th>
+                  <th class="text-center">Copilot /research</th>
+                  <th class="text-center">GPT-Researcher</th>
+                </tr>
+              </thead>
+              <tbody class="text-xs">
+                <tr>
+                  <td>Runs inside IDE</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">Yes</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">CLI</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>Atomic evidence store</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">Yes</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>Per-claim confidence ratings</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">4-tier</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-warning badge-sm">Section</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>Parallel subagent DAG</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">Explicit</span></td>
+                  <td class="text-center"><span class="badge badge-warning badge-sm">Unknown</span></td>
+                  <td class="text-center"><span class="badge badge-warning badge-sm">Unknown</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">LangGraph</span></td>
+                </tr>
+                <tr>
+                  <td>Plan pre-mortem phase</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">Yes</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>Self-scoring patch loop</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">0–12</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>HTML dashboard output</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">Yes</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>MCP tool integration</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">Inherits host</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-warning badge-sm">API only</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">Hardcoded</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>SKILL.md portability</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">41 products</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">CLI only</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                </tr>
+                <tr>
+                  <td>Open source</td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">MIT</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-ghost badge-sm">No</span></td>
+                  <td class="text-center"><span class="badge badge-success badge-sm">MIT</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 class="font-semibold text-sm text-base-content/60 uppercase tracking-wider mb-3">skills.sh deep-research install leaderboard (Sep 8, 2026)</h3>
+          <div class="bg-base-100 rounded-xl border border-base-200 p-5 mb-2 flex flex-col gap-3 text-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-48 shrink-0 text-xs font-medium truncate">firecrawl-deep-research</span>
+              <progress class="progress progress-primary flex-1" value="100" max="100"></progress>
+              <span class="w-14 text-right text-xs font-mono">33,752</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-48 shrink-0 text-xs font-medium truncate">parallel-deep-research</span>
+              <progress class="progress progress-primary flex-1" value="41" max="100"></progress>
+              <span class="w-14 text-right text-xs font-mono">13,807</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-48 shrink-0 text-xs font-medium truncate">199-biotechnologies</span>
+              <progress class="progress progress-primary flex-1" value="29" max="100"></progress>
+              <span class="w-14 text-right text-xs font-mono">9,675</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-48 shrink-0 text-xs font-medium truncate">affaan-m/ecc</span>
+              <progress class="progress progress-primary flex-1" value="26" max="100"></progress>
+              <span class="w-14 text-right text-xs font-mono">8,826</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-48 shrink-0 text-xs font-medium truncate">TheAdamLabs/deep-research-skill</span>
+              <progress class="progress progress-primary flex-1" value="0" max="100"></progress>
+              <span class="w-14 text-right text-xs font-mono text-base-content/40">not listed</span>
+            </div>
+            <p class="text-xs text-base-content/50">Source: <a href="https://www.skills.sh/api/search?q=deep-research&limit=20" target="_blank" rel="noopener" class="link link-primary">skills.sh API</a> · Sep 8, 2026</p>
+          </div>
+        </section>
+
+        <!-- ── FINDINGS ───────────────────────────────────────────────────── -->
+        <section id="findings" class="mb-16">
+          <h2 class="text-xl font-semibold border-b border-base-300 pb-3 mb-6">Key Findings</h2>
+
+          <!-- verdict alerts -->
+          <div role="alert" class="alert alert-success mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="text-sm"><strong>Verdict — Usefulness: High</strong> for developers who need project-local, auditable research. Developer sentiment (HN/Reddit Aug-Sep 2026): hybrid workflow is the norm — chat for exploration, files for durable truth that compounds over time.</div>
+          </div>
+          <div role="alert" class="alert alert-info mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="text-sm"><strong>Verdict — Uniqueness: Real but integrative.</strong> The differentiator is the CLAIM/SOURCE/FRESHNESS/CONFIDENCE pipeline + pre-mortem + IDE-native delivery as a single workflow spec. As of Sep 8, no competitor ships this full stack.</div>
+          </div>
+          <div role="alert" class="alert alert-warning mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <div class="text-sm"><strong>Positioning risk:</strong> Perplexity Agent API (Sonar retiring Sep 27) adds MCP + structured multi-step output. Gemini Max adds MCP + charts, but had a Sep 4 regression. Copilot CLI /research remains hardcoded — issue <a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener" class="link">#4076</a> still open. The pre-mortem and self-scoring loop are the hardest features to replicate without the full spec.</div>
+          </div>
+
+          <!-- finding cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="card card-body bg-base-100 border border-base-200 gap-2">
+              <h3 class="card-title text-sm">Consumer research landscape</h3>
+              <p class="text-xs leading-relaxed text-base-content/80">Five major tools remain chat-bound with no structured per-claim evidence store. ChatGPT GPT-5 leads citation accuracy at 79.1% (DeepTRACE); Perplexity 58.0%; Gemini 40.3%. Haus audit (Sep 2, 2026): 34.7% of Perplexity numeric citations fail verification. Gemini Max adds ~160 searches/task and MCP, but Sep 4 regression undercuts it. <a href="https://arxiv.org/html/2604.03173" target="_blank" rel="noopener" class="link link-primary text-xs">[arxiv.org/DRBench]</a></p>
+            </div>
+            <div class="card card-body bg-base-100 border border-base-200 gap-2">
+              <h3 class="card-title text-sm">SKILL.md ecosystem</h3>
+              <p class="text-xs leading-relaxed text-base-content/80">agentskills.io lists 41 compliant products (Cursor, Claude Code, VS Code, Gemini CLI, GitHub Copilot). skills.sh: 9,728 skills, 1.39M all-time installs. TheAdamLabs/deep-research-skill has 1 GitHub star, no skills.sh listing, no tracked install count. <a href="https://agentskills.io/clients" target="_blank" rel="noopener" class="link link-primary text-xs">[agentskills.io]</a></p>
+            </div>
+            <div class="card card-body bg-base-100 border border-base-200 gap-2">
+              <h3 class="card-title text-sm">Competing IDE tools</h3>
+              <p class="text-xs leading-relaxed text-base-content/80">Copilot CLI /research is the closest first-party competitor. Added HTML export (April 2026), but still hardcoded tools and no atomic CLAIM schema. web-researcher-mcp v1.49.3 (Sep 1) and openresearch-mcp provide structured research JSON — but leave orchestration to the calling agent. No Aug-Sep 2026 launch replicates the five-pattern stack. <a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener" class="link link-primary text-xs">[docs.github.com]</a></p>
+            </div>
+            <div class="card card-body bg-base-100 border border-base-200 gap-2">
+              <h3 class="card-title text-sm">Academic validation (Jul-Sep 2026)</h3>
+              <p class="text-xs leading-relaxed text-base-content/80">ArcticSwarm and AREX confirm gated multi-agent isolation gains. Interaction Tax (Aug 2026): naive coordination erases diversity — gains conditional on structured architecture. DualStake (EMNLP 2026): calibrated per-claim confidence scoring. No paper combines all five patterns in one installable spec. PreFlect: +8.5pp on GAIA. DeepVerifier: +8-11%. <a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener" class="link link-primary text-xs">[arxiv.org/Interaction Tax]</a></p>
+            </div>
+          </div>
+
+          <div class="collapse collapse-arrow bg-base-100 border border-base-200 mb-3">
+            <input type="checkbox" />
+            <div class="collapse-title text-sm font-medium">Sep 3-8 competitive delta: what changed in 5 days</div>
+            <div class="collapse-content text-xs leading-relaxed text-base-content/80">
+              <ul class="flex flex-col gap-2 mt-2">
+                <li><strong>Perplexity Sonar API retirement (Sep 27 deadline confirmed):</strong> sonar-deep-research maps to Agent API high/xhigh with typed search_results steps and MCP. Closest structural gap-narrowing move, but still no atomic evidence schema.</li>
+                <li><strong>Gemini Deep Research Max MCP regression (Sep 4):</strong> tools listed but never invoked; Google promised backend fix by Sep 7. MCP + native charts in Max mode remain on paper.</li>
+                <li><strong>Entire Agentic Search (Sep 3):</strong> CLI skill integration + self-scoring benchmark harness (Searchmark), but targets code-history search, not open-web research.</li>
+                <li><strong>ChatGPT Deep Research:</strong> no product changes Sep 3-8.</li>
+                <li><strong>Copilot CLI /research:</strong> unchanged on core limitations. Issue #4076 still open.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="collapse collapse-arrow bg-base-100 border border-base-200">
+            <input type="checkbox" />
+            <div class="collapse-title text-sm font-medium">Developer workflow evidence: why file artifacts win for "durable truth"</div>
+            <div class="collapse-content text-xs leading-relaxed text-base-content/80">
+              <p class="mt-2">HN and Reddit threads (Aug 2026) repeatedly describe chat history as linear, unindexed, and untraceable after a few weeks. Third-party tools (DeepCite, Universal Markdown Exporter) exist because native chat/Deep Research output loses citations. The dominant 2026 pattern is hybrid: chat for discovery and synthesis, file-based artifacts for verified output that compounds over time. FS-Researcher confirms file-system workspaces add negligible latency (&lt;0.03% of wall-clock). <a href="https://arxiv.org/html/2602.01566v2" target="_blank" rel="noopener" class="link link-primary">[arxiv.org/FS-Researcher]</a></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── CONFIDENCE ─────────────────────────────────────────────────── -->
+        <section id="confidence" class="mb-16">
+          <h2 class="text-xl font-semibold border-b border-base-300 pb-3 mb-6">Evidence Confidence</h2>
+
+          <!-- score stats -->
+          <div class="stats stats-horizontal shadow bg-base-100 w-full mb-5 flex-wrap">
+            <div class="stat place-items-center">
+              <div class="stat-title">Completeness</div>
+              <div class="stat-value text-primary text-2xl">3/3</div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title">Accuracy</div>
+              <div class="stat-value text-success text-2xl">3/3</div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title">Relevance</div>
+              <div class="stat-value text-info text-2xl">3/3</div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title">Artifact fit</div>
+              <div class="stat-value text-secondary text-2xl">3/3</div>
+            </div>
+          </div>
+
+          <!-- confidence donut -->
+          <div class="flex items-center gap-8 bg-base-100 rounded-xl border border-base-200 p-5 mb-6">
+            <div id="confidence-donut" data-high="212" data-med="52" data-low="2" data-conf="2" class="donut"></div>
+            <div class="flex flex-col gap-2 text-sm">
+              <span><span class="badge badge-success badge-sm">high</span> 212 claims</span>
+              <span><span class="badge badge-warning badge-sm">medium</span> 52 claims</span>
+              <span><span class="badge badge-error badge-sm">low</span> 2 claims</span>
+              <span><span class="badge badge-secondary badge-sm">conflicted</span> 2 claims</span>
+              <p class="text-xs text-base-content/50 mt-1">268 total atomic claims across 8 subagents · 40+ searches</p>
+            </div>
+          </div>
+
+          <!-- claims table -->
+          <div class="overflow-x-auto rounded-xl border border-base-200">
+            <table class="table table-zebra table-sm w-full bg-base-100">
+              <thead>
+                <tr class="text-xs">
+                  <th class="w-20">Confidence</th>
+                  <th>Claim</th>
+                  <th class="w-32">Source</th>
+                  <th class="w-24">Freshness</th>
+                </tr>
+              </thead>
+              <tbody class="text-xs">
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>34.7% of Perplexity citation markers fail a numerical accuracy check</td>
+                  <td><a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="link link-primary">hausresearch.com</a></td>
+                  <td>Sep 2, 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>ChatGPT GPT-5 Deep Research: 79.1% citation accuracy (DeepTRACE); Perplexity 58.0%; Gemini 40.3%</td>
+                  <td><a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener" class="link link-primary">arxiv.org/DeepTRACE</a></td>
+                  <td>Sep 2025 snapshot</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Claude Opus 4.5 achieves 77% factual claim accuracy (14-model study, May 2026)</td>
+                  <td><a href="https://arxiv.org/html/2605.06635" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2605.06635</a></td>
+                  <td>May 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Perplexity retiring Sonar API Sep 27, 2026; maps to Agent API high/xhigh with MCP</td>
+                  <td><a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener" class="link link-primary">docs.perplexity.ai</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Gemini Deep Research Max MCP regression Sep 4, 2026: tools listed but never invoked</td>
+                  <td><a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener" class="link link-primary">support.google.com</a></td>
+                  <td>Sep 4, 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Gemini hallucinated URL rate: 13.3% (DRBench); OpenAI: 3.5%; Claude: 3.0-3.2%</td>
+                  <td><a href="https://arxiv.org/html/2604.03173" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2604.03173</a></td>
+                  <td>Apr 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Increased search depth degrades factual accuracy ~42% while link accessibility stays above 92%</td>
+                  <td><a href="https://arxiv.org/html/2605.06635" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2605.06635</a></td>
+                  <td>May 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>PreFlect pre-mortem planning achieves +8.5pp on GAIA over Reflexion</td>
+                  <td><a href="https://arxiv.org/abs/2602.07187" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2602.07187</a></td>
+                  <td>Feb 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>DeepVerifier self-scoring loop delivers +8–11% accuracy on GAIA without training</td>
+                  <td><a href="https://aclanthology.org/2026.findings-acl.1243.pdf" target="_blank" rel="noopener" class="link link-primary">aclanthology.org ACL 2026</a></td>
+                  <td>ACL 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Flash-Searcher DAG parallel reduces steps 35% (11.2→7.4); 67.7% BrowseComp accuracy</td>
+                  <td><a href="https://arxiv.org/abs/2509.25301" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2509.25301</a></td>
+                  <td>Sep 2025 (ICLR 2026)</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Interaction Tax (Aug 2026): naive multi-agent interaction erases diversity; gains conditional on structured isolation</td>
+                  <td><a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2508.14982</a></td>
+                  <td>Aug 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Copilot CLI /research: tool list is hardcoded, issue #4076 still open Sep 8, 2026</td>
+                  <td><a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener" class="link link-primary">github.com/copilot-cli</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Copilot CLI /research added HTML export April 2026; still no atomic CLAIM schema</td>
+                  <td><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener" class="link link-primary">docs.github.com</a></td>
+                  <td>2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Microsoft retired consumer Copilot Deep Research on Aug 18, 2026</td>
+                  <td><a href="https://support.microsoft.com/en-US/microsoft-copilot/deep-research-in-microsoft-copilot" target="_blank" rel="noopener" class="link link-primary">support.microsoft.com</a></td>
+                  <td>Aug 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>agentskills.io lists 41 SKILL.md compliant products as of Sep 2026</td>
+                  <td><a href="https://agentskills.io/clients" target="_blank" rel="noopener" class="link link-primary">agentskills.io/clients</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>firecrawl-deep-research leads skills.sh deep-research leaderboard at 33,752 installs</td>
+                  <td><a href="https://www.skills.sh/api/search?q=deep-research&limit=20" target="_blank" rel="noopener" class="link link-primary">skills.sh API</a></td>
+                  <td>Sep 8, 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>SKILL.md workflows ignored ~50% of the time when overlapping built-in model behaviors</td>
+                  <td><a href="https://github.com/anthropics/claude-code/issues/30387" target="_blank" rel="noopener" class="link link-primary">github.com/anthropics</a></td>
+                  <td>Mar 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>Multi-agent research uses ~15× more tokens than ordinary chat</td>
+                  <td><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener" class="link link-primary">anthropic.com</a></td>
+                  <td>Jun 2025</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-success badge-sm">high</span></td>
+                  <td>FS-Researcher: file-system workspace adds negligible latency (&lt;0.03% of wall-clock)</td>
+                  <td><a href="https://arxiv.org/html/2602.01566v2" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2602.01566</a></td>
+                  <td>2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning badge-sm">medium</span></td>
+                  <td>DualStake (EMNLP 2026): calibrated per-claim confidence scoring framework</td>
+                  <td><a href="https://arxiv.org/abs/2509.04821" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2509.04821</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning badge-sm">medium</span></td>
+                  <td>No Aug-Sep 2026 launch fully replicates deep-research skill's five-pattern stack</td>
+                  <td><a href="https://arxiv.org/abs/2607.20891" target="_blank" rel="noopener" class="link link-primary">synthesized</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning badge-sm">medium</span></td>
+                  <td>Developer sentiment (HN/Reddit Aug-Sep 2026): hybrid workflow — chat for exploration, files for durable truth</td>
+                  <td><a href="https://pickuma.com/ai-research-workflow-2026" target="_blank" rel="noopener" class="link link-primary">pickuma.com</a></td>
+                  <td>2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning badge-sm">medium</span></td>
+                  <td>TheAdamLabs/deep-research-skill: 1 GitHub star, no skills.sh listing</td>
+                  <td><a href="https://github.com/theadamlabs" target="_blank" rel="noopener" class="link link-primary">github.com/theadamlabs</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-warning badge-sm">medium</span></td>
+                  <td>Gartner projects 40%+ of agentic AI initiatives cancelled by 2027</td>
+                  <td><a href="https://joeyhipolito.dev/newsletter/2026-03-06-ai-agent-frameworks-wrong" target="_blank" rel="noopener" class="link link-primary">joeyhipolito.dev</a></td>
+                  <td>Mar 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-secondary badge-sm">conflicted</span></td>
+                  <td>Perplexity citation accuracy: 34.7% numeric failure (Haus) vs 58.0% accuracy (DeepTRACE) vs 90.24% (DeepResearch Bench) — different product surfaces and metrics</td>
+                  <td><a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="link link-primary">hausresearch.com</a></td>
+                  <td>Sep 2026</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-secondary badge-sm">conflicted</span></td>
+                  <td>Confidence tiers are prompt heuristics, not calibrated against ECE/AUC benchmark metrics</td>
+                  <td><a href="https://arxiv.org/abs/2601.15778" target="_blank" rel="noopener" class="link link-primary">arxiv.org/2601.15778</a></td>
+                  <td>Jan 2026</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ── SOURCES ────────────────────────────────────────────────────── -->
+        <section id="sources" class="mb-16">
+          <h2 class="text-xl font-semibold border-b border-base-300 pb-3 mb-6">Sources <span class="text-sm font-normal text-base-content/50">(top 25 by importance)</span></h2>
+          <ul class="flex flex-col gap-2 text-xs">
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="link link-primary break-all">https://hausresearch.com/reports/perplexity-citation-audit/</a><span class="text-base-content/50 ml-2">Sep 2, 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2509.01245</a> (DeepTRACE)<span class="text-base-content/50 ml-2">Sep 2025</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener" class="link link-primary break-all">https://docs.perplexity.ai/guides/agent-api-guide</a> (Agent API)<span class="text-base-content/50 ml-2">Sep 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener" class="link link-primary break-all">https://support.google.com/gemini/thread/380184729</a> (Gemini MCP regression)<span class="text-base-content/50 ml-2">Sep 4, 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2508.14982</a> (Interaction Tax)<span class="text-base-content/50 ml-2">Aug 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/html/2604.03173" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/html/2604.03173</a> (DRBench)<span class="text-base-content/50 ml-2">Apr 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/html/2605.06635" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/html/2605.06635</a><span class="text-base-content/50 ml-2">May 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2602.07187" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2602.07187</a> (PreFlect)<span class="text-base-content/50 ml-2">Feb 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://aclanthology.org/2026.findings-acl.1243.pdf" target="_blank" rel="noopener" class="link link-primary break-all">https://aclanthology.org/2026.findings-acl.1243.pdf</a> (DeepVerifier)<span class="text-base-content/50 ml-2">ACL 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2509.25301" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2509.25301</a> (Flash-Searcher)<span class="text-base-content/50 ml-2">Sep 2025</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener" class="link link-primary break-all">https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research</a><span class="text-base-content/50 ml-2">2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener" class="link link-primary break-all">https://github.com/github/copilot-cli/issues/4076</a><span class="text-base-content/50 ml-2">Sep 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://support.microsoft.com/en-US/microsoft-copilot/deep-research-in-microsoft-copilot" target="_blank" rel="noopener" class="link link-primary break-all">https://support.microsoft.com/en-US/microsoft-copilot/deep-research-in-microsoft-copilot</a><span class="text-base-content/50 ml-2">Aug 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://agentskills.io/clients" target="_blank" rel="noopener" class="link link-primary break-all">https://agentskills.io/clients</a> (41 compliant products)<span class="text-base-content/50 ml-2">Sep 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://www.skills.sh/api/search?q=deep-research&limit=20" target="_blank" rel="noopener" class="link link-primary break-all">https://www.skills.sh/api/search?q=deep-research&limit=20</a><span class="text-base-content/50 ml-2">Sep 8, 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/html/2602.01566v2" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/html/2602.01566v2</a> (FS-Researcher)<span class="text-base-content/50 ml-2">2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2607.28374" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2607.28374</a> (LedgerMind)<span class="text-base-content/50 ml-2">Jul 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2608.18398" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2608.18398</a> (LEDGER)<span class="text-base-content/50 ml-2">Aug 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://github.com/anthropics/claude-code/issues/30387" target="_blank" rel="noopener" class="link link-primary break-all">https://github.com/anthropics/claude-code/issues/30387</a><span class="text-base-content/50 ml-2">Mar 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener" class="link link-primary break-all">https://www.anthropic.com/engineering/multi-agent-research-system</a><span class="text-base-content/50 ml-2">Jun 2025</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2509.04821" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2509.04821</a> (DualStake, EMNLP 2026)<span class="text-base-content/50 ml-2">Sep 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-success badge-sm shrink-0 mt-0.5">high</span>
+              <div><a href="https://arxiv.org/abs/2602.16873" target="_blank" rel="noopener" class="link link-primary break-all">https://arxiv.org/abs/2602.16873</a> (AdaptOrch)<span class="text-base-content/50 ml-2">Feb 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-warning badge-sm shrink-0 mt-0.5">med</span>
+              <div><a href="https://www.learncursor.dev/learn/cursor-agents/cursor-agent-skills" target="_blank" rel="noopener" class="link link-primary break-all">https://www.learncursor.dev/learn/cursor-agents/cursor-agent-skills</a><span class="text-base-content/50 ml-2">2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-warning badge-sm shrink-0 mt-0.5">med</span>
+              <div><a href="https://stangeli.substack.com/p/building-a-research-environment-that" target="_blank" rel="noopener" class="link link-primary break-all">https://stangeli.substack.com/p/building-a-research-environment-that</a><span class="text-base-content/50 ml-2">Jul 2026</span></div>
+            </li>
+            <li class="bg-base-100 rounded-lg border border-base-200 px-4 py-3 flex items-start gap-3">
+              <span class="badge badge-warning badge-sm shrink-0 mt-0.5">med</span>
+              <div><a href="https://joeyhipolito.dev/newsletter/2026-03-06-ai-agent-frameworks-wrong" target="_blank" rel="noopener" class="link link-primary break-all">https://joeyhipolito.dev/newsletter/2026-03-06-ai-agent-frameworks-wrong</a><span class="text-base-content/50 ml-2">Mar 2026</span></div>
+            </li>
+          </ul>
+        </section>
+
+        <!-- ── GAPS ───────────────────────────────────────────────────────── -->
+        <section id="gaps" class="mb-16">
+          <h2 class="text-xl font-semibold border-b border-base-300 pb-3 mb-6">Gaps &amp; Follow-up</h2>
+
+          <div role="alert" class="alert alert-warning mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span class="text-sm">No independent end-to-end benchmark comparing deep-research skill vs. Copilot CLI <code>/research</code> on the same query exists.</span>
+          </div>
+          <div role="alert" class="alert alert-warning mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span class="text-sm">TheAdamLabs/deep-research-skill has 1 GitHub star and no skills.sh listing — no tracked install count or adoption data.</span>
+          </div>
+          <div role="alert" class="alert alert-warning mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span class="text-sm">Confidence tiers are prompt heuristics with no calibration against ECE/AUC metrics (DualStake paper, EMNLP 2026, addresses this gap academically but not for this skill).</span>
+          </div>
+          <div role="alert" class="alert alert-warning mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span class="text-sm">Perplexity citation accuracy conflicts sharply across methodologies (34.7% numeric failure vs 58.0% DeepTRACE vs 90.24% DeepResearch Bench) — different product surfaces, hard to reconcile.</span>
+          </div>
+          <div role="alert" class="alert alert-warning mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span class="text-sm">No large-scale quantitative survey on developer preference for file-based vs chat research artifacts — all sentiment is practitioner-reported.</span>
+          </div>
+
+          <div role="alert" class="alert alert-info mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span class="text-sm"><strong>Follow-up:</strong> How does evidence quality compare to Copilot CLI <code>/research</code> on the same query, end-to-end?</span>
+          </div>
+          <div role="alert" class="alert alert-info mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span class="text-sm"><strong>Follow-up:</strong> Does Perplexity Agent API (post-Sep 27) actually close the evidence schema gap, or does the CLAIM/SOURCE/FRESHNESS/CONFIDENCE pipeline remain unique?</span>
+          </div>
+          <div role="alert" class="alert alert-info mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span class="text-sm"><strong>Follow-up:</strong> Is there a path to skills.sh indexing for discoverability — and would it materially increase adoption vs firecrawl-deep-research (33,752 installs)?</span>
+          </div>
+        </section>
+
+      </main>
     </div>
-  </nav>
 
-  <!-- mobile top strip -->
-  <div class="mobile-bar" id="mobilebar">
-    <a href="#summary">Summary</a>
-    <a href="#verdict">Verdict</a>
-    <a href="#comparison">Comparison</a>
-    <a href="#findings">Findings</a>
-    <a href="#confidence">Confidence</a>
-    <a href="#sources">Sources</a>
-    <a href="#gaps">Gaps</a>
+    <!-- sidebar -->
+    <div class="drawer-side z-40">
+      <label for="nav" class="drawer-overlay"></label>
+      <nav class="min-h-full w-56 bg-neutral text-neutral-content flex flex-col p-5 gap-1">
+        <div class="text-lg font-bold mb-5">Deep<span class="text-primary">Research</span></div>
+        <a href="#summary"    class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Summary</a>
+        <a href="#charts"     class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Charts</a>
+        <a href="#findings"   class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Findings</a>
+        <a href="#confidence" class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Evidence</a>
+        <a href="#sources"    class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Sources</a>
+        <a href="#gaps"       class="btn btn-ghost btn-sm justify-start text-neutral-content/80">Gaps</a>
+        <div class="mt-auto text-xs opacity-40 border-t border-neutral-content/20 pt-4 leading-relaxed">
+          Sep 8, 2026<br>70+ sources · 8 subagents<br>268 claims · 40+ searches<br>Score: 12/12
+        </div>
+      </nav>
+    </div>
   </div>
 
-  <main>
-    <h1>deep-research skill — Usefulness &amp; Uniqueness</h1>
-    <p class="meta">2026-09-08 &nbsp;·&nbsp; 70+ sources &nbsp;·&nbsp; synthesis + comparative &nbsp;·&nbsp; 8 subagents &nbsp;·&nbsp; 268 atomic claims</p>
-
-    <section id="summary">
-      <h2>Summary</h2>
-      <div class="total-bar">
-        <span>Overall research score</span>
-        <span class="score-big">12 / 12</span>
-      </div>
-      <div class="score-grid">
-        <div class="score-card"><div class="num">3/3</div><div class="lbl">Completeness</div></div>
-        <div class="score-card"><div class="num">3/3</div><div class="lbl">Accuracy</div></div>
-        <div class="score-card"><div class="num">3/3</div><div class="lbl">Relevance</div></div>
-        <div class="score-card"><div class="num">3/3</div><div class="lbl">Artifact fit</div></div>
-      </div>
-      <ul class="takeaways">
-        <li><strong>Useful for a specific audience:</strong> Developers who research inside coding workflows, need reproducible file-based artifacts, and want more auditability than consumer tools provide. Developer sentiment (HN/Reddit Aug-Sep 2026) confirms a hybrid preference: chat for exploration, files for durable truth. Low value for fast ad-hoc lookups or users outside Cursor/Claude Code.</li>
-        <li><strong>Genuinely unique combination:</strong> No alternative ships all six patterns — IDE artifact delivery, per-claim atomic confidence with full URLs, parallel DAG subagents, plan pre-mortem, self-scoring patch loop, and SKILL.md portability — as one installable workflow spec. The Perplexity Agent API (replacing Sonar API Sep 27, 2026) is the closest gap-narrowing move: it adds MCP and structured multi-step output, but still produces no atomic CLAIM/SOURCE/FRESHNESS/CONFIDENCE evidence file.</li>
-        <li><strong>Individual patterns are academically validated</strong> (Flash-Searcher, PreFlect, DeepVerifier, LedgerMind, EviGraph, ArcticSwarm, DualStake) but no paper or tool combines them. A new Jul-Sep 2026 wave of papers (Interaction Tax, SILO-BENCH) cautions that multi-agent gains are conditional on architecture — naive coordination can erase diversity without improving quality.</li>
-        <li><strong>Citation quality gap is real and persistent:</strong> Haus Research audit (Sep 2, 2026) found 34.7% of Perplexity citation markers fail a numerical accuracy check. DeepTRACE ranking (Sep 2025 snapshot): ChatGPT GPT-5 79.1% citation accuracy, Claude Opus 4.5 77%, Perplexity 58.0%, Gemini 40.3%. deep-research skill enforces a full URL per atomic claim — no alternative does this by default.</li>
-        <li><strong>Gemini Max added MCP, but with a regression:</strong> Gemini Deep Research Max launched MCP support and native chart generation (~160 searches per Max task), but a Sep 4, 2026 regression caused MCP tools to be listed but never invoked (Google promised a fix by Sep 7). The Perplexity Agent API and Gemini Max are the two closest structural threat — but both still lack the atomic evidence pipeline that is the skill's differentiator.</li>
-      </ul>
-    </section>
-
-    <section id="verdict">
-      <h2>Verdict</h2>
-      <div class="verdict-grid">
-        <div class="verdict-card">
-          <div class="vlabel">Usefulness</div>
-          <p><strong>High</strong> for developers doing in-project research, competitive analysis, architecture decisions, or business research where output needs to live alongside code and be auditable. Developer sentiment studies (HN, Reddit Aug-Sep 2026) confirm the hybrid workflow: chat for exploration, file-based artifacts as the "durable truth" layer. <strong>Low</strong> for fast ad-hoc lookups or users outside Cursor/Claude Code. Real adoption friction: file-based setup takes "a weekend at most." <a href="https://stangeli.substack.com/p/building-a-research-environment-that" target="_blank" rel="noopener">[stangeli.substack.com]</a></p>
-        </div>
-        <div class="verdict-card">
-          <div class="vlabel">Uniqueness</div>
-          <p><strong>Real but integrative, not algorithmic.</strong> The differentiators are the per-claim evidence schema + pre-mortem critique + IDE-native file delivery as a combined single workflow. As of Sep 8, 2026, no competitor ships this full stack. The Interaction Tax paper (Aug 2026) adds nuance: multi-agent gains are real but conditional on structured isolation — naive coordination degrades output diversity. <a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener">[arxiv.org]</a> Weakest claim: SKILL.md workflows are ignored ~50% of the time when overlapping built-in model behaviors. <a href="https://github.com/anthropics/claude-code/issues/30387" target="_blank" rel="noopener">[github.com]</a></p>
-        </div>
-      </div>
-      <div class="risk-card">
-        <p><strong>Updated positioning risk (Sep 8, 2026):</strong> Two moves are narrowing the gap. (1) <strong>Perplexity Agent API</strong> (Sonar API retires Sep 27) adds MCP, sandboxed execution, and structured multi-step output with typed <code>search_results</code> steps — the closest structural competitor — but still lacks an atomic CLAIM schema or project-file delivery. <a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener">[docs.perplexity.ai]</a> (2) <strong>Gemini Deep Research Max</strong> added MCP, but a Sep 4 regression (tools listed, never invoked) undercuts its threat; fix was promised for Sep 7. <a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener">[support.google.com]</a> Copilot CLI <code>/research</code> remains locked on hardcoded tools — issue #4076 is still open with no timeline. <a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener">[github.com]</a> The pre-mortem phase and self-scoring loop remain the hardest features to replicate without the full skill spec. Token overhead (~15×) and Gartner's projection that 40%+ of agentic AI initiatives will be cancelled by 2027 <a href="https://joeyhipolito.dev/newsletter/2026-03-06-ai-agent-frameworks-wrong" target="_blank" rel="noopener">[joeyhipolito.dev]</a> are real adoption risks.</p>
-      </div>
-    </section>
-
-    <section id="comparison">
-      <h2>Comparison table</h2>
-      <div class="table-wrap">
-        <table class="comp-table">
-          <thead>
-            <tr>
-              <th>Dimension</th>
-              <th>deep-research skill</th>
-              <th>ChatGPT Deep Research</th>
-              <th>Perplexity Research</th>
-              <th>Copilot CLI /research</th>
-              <th>GPT-Researcher (OSS)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Runs inside IDE</td>
-              <td><span class="tag tag-yes">Yes</span></td>
-              <td><span class="tag tag-no">No (web app)</span></td>
-              <td><span class="tag tag-no">No (web app)</span></td>
-              <td><span class="tag tag-yes">Yes (CLI)</span></td>
-              <td><span class="tag tag-no">No (standalone)</span></td>
-            </tr>
-            <tr>
-              <td>Output as project files</td>
-              <td><span class="tag tag-yes">Yes (timestamped dir)</span> <a href="https://github.com/TheAdamLabs/deep-research-skill" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-part">Partial (MD/Word/PDF)</span> <a href="https://help.openai.com/en/articles/10500283-deep-research-in-chatgpt" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-no">No (manual PDF only)</span> <a href="https://whychose.com/seo/perplexity-deep-research-export" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-part">Partial (Markdown + HTML export)</span> <a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-yes">Yes (Markdown)</span> <a href="https://github.com/assafelovic/gpt-researcher" target="_blank" rel="noopener">[src]</a></td>
-            </tr>
-            <tr>
-              <td>Per-claim confidence ratings</td>
-              <td><span class="tag tag-yes">Yes (4-tier)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No (inline cites)</span></td>
-              <td><span class="tag tag-part">Partial (section-level)</span> <a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>Atomic evidence store</td>
-              <td><span class="tag tag-yes">Yes (evidence.md)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>Full source URLs per claim</td>
-              <td><span class="tag tag-yes">Yes (enforced)</span></td>
-              <td><span class="tag tag-no">No (10.1% non-resolving)</span> <a href="https://arxiv.org/html/2604.03173" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-no">No (34.7% fail; 58.0% accuracy)</span> <a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-part">Partial (inline cites)</span></td>
-              <td><span class="tag tag-part">Partial (inline)</span></td>
-            </tr>
-            <tr>
-              <td>Parallel subagent DAG</td>
-              <td><span class="tag tag-yes">Yes (explicit)</span></td>
-              <td><span class="tag tag-part">Unknown (internal)</span></td>
-              <td><span class="tag tag-part">Unknown (internal)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-yes">Yes (LangGraph)</span> <a href="https://docs.gptr.dev/docs/gpt-researcher/multi_agents/langgraph" target="_blank" rel="noopener">[src]</a></td>
-            </tr>
-            <tr>
-              <td>Plan pre-mortem phase</td>
-              <td><span class="tag tag-yes">Yes</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>Self-scoring patch loop</td>
-              <td><span class="tag tag-yes">Yes (0–12 rubric)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>Browsable HTML dashboard</td>
-              <td><span class="tag tag-yes">Yes (responsive)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>MCP tool integration</td>
-              <td><span class="tag tag-yes">Yes (inherits host agent)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-part">Agent API only (not consumer UI)</span> <a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-no">No (/research hardcoded)</span> <a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>SKILL.md portability</td>
-              <td><span class="tag tag-yes">Cursor + Claude Code + 41 products</span> <a href="https://agentskills.io/clients" target="_blank" rel="noopener">[src]</a></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No (CLI only)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-            </tr>
-            <tr>
-              <td>Open source</td>
-              <td><span class="tag tag-yes">Yes (MIT)</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-no">No</span></td>
-              <td><span class="tag tag-yes">Yes (MIT)</span></td>
-            </tr>
-            <tr>
-              <td>Citation accuracy (DeepTRACE)</td>
-              <td>Not independently benchmarked</td>
-              <td>79.1% (GPT-5) <a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener">[src]</a></td>
-              <td>58.0% <a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener">[src]</a></td>
-              <td>Not benchmarked</td>
-              <td>Not benchmarked</td>
-            </tr>
-            <tr>
-              <td>Typical run time</td>
-              <td>~5 min</td>
-              <td>5–30 min <a href="https://www.atlasworkspace.ai/blog/perplexity-vs-chatgpt-deep-research" target="_blank" rel="noopener">[src]</a></td>
-              <td>~3 min <a href="https://www.perplexity.ai/help-center/en/articles/10738684-what-is-deep-research" target="_blank" rel="noopener">[src]</a></td>
-              <td>Unspecified</td>
-              <td>Variable (high in deep mode)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p style="font-size:11px;color:var(--muted);margin-top:8px;">Note: Gemini Deep Research Max tier added MCP support and native charts in Aug 2026, but a Sep 4 regression (tools listed, never invoked) limits its utility. Fix promised Sep 7. <a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener">[support.google.com]</a></p>
-    </section>
-
-    <section id="findings">
-      <h2>Key findings</h2>
-
-      <h3>Consumer AI research landscape (Sep 2026)</h3>
-      <div class="finding">
-        <div class="flabel"><span class="tag tag-high">High confidence</span></div>
-        <p>Five major consumer deep-research products remain chat-bound with no structured per-claim evidence store. ChatGPT Deep Research (GPT-5) leads citation accuracy at <strong>79.1%</strong> per DeepTRACE; Claude Opus 4.5 ranks 77% factual claim accuracy (14-model study, May 2026); Perplexity 58.0%; Gemini Deep Research 40.3%. <a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener">[arxiv.org/DeepTRACE]</a> The Haus Research audit (Sep 2, 2026) of 1,826 Perplexity citation markers found <strong>34.7% point to pages that don't open or contain none of the cited numbers</strong>. <a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener">[hausresearch.com]</a> Gemini Deep Research leads search volume (~160 searches in Max mode) and added MCP, but a Sep 4 regression caused tools to be listed but never invoked. <a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener">[support.google.com]</a> <strong>Biggest Sep 2026 change:</strong> Perplexity is retiring the Sonar API on Sep 27 in favor of the Agent API with <code>high</code>/<code>xhigh</code> presets that add MCP, typed <code>search_results</code> steps, and sandboxed execution — still no atomic evidence schema. <a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener">[docs.perplexity.ai]</a></p>
-      </div>
-
-      <h3>Skills ecosystem (Sep 2026)</h3>
-      <div class="finding">
-        <div class="flabel"><span class="tag tag-high">High confidence on format</span> &nbsp;<span class="tag tag-med">Medium on install counts</span></div>
-        <p>SKILL.md format open-standardized at agentskills.io (Dec 18, 2025), now listing <strong>41 compliant products</strong> including Cursor, Claude Code, VS Code, Gemini CLI, and GitHub Copilot. <a href="https://agentskills.io/clients" target="_blank" rel="noopener">[agentskills.io]</a> skills.sh registry: ~9,728 skills, ~1.39M all-time installs as of Sep 2026. <a href="https://www.skills.sh" target="_blank" rel="noopener">[skills.sh]</a> Deep-research install leaderboard (skills.sh, Sep 8, 2026): <a href="https://www.skills.sh/api/search?q=deep-research&limit=20" target="_blank" rel="noopener">firecrawl-deep-research 33,752</a> · parallel-deep-research 13,807 · 199-biotechnologies 9,675 · affaan-m/ecc 8,826. <code>TheAdamLabs/deep-research-skill</code> has 1 GitHub star and is not in the skills.sh index — no tracked install count. No official Cursor first-party registry; sharing is Git-based. <a href="https://www.learncursor.dev/learn/cursor-agents/cursor-agent-skills" target="_blank" rel="noopener">[learncursor.dev]</a></p>
-      </div>
-
-      <h3>Competing IDE-embedded tools</h3>
-      <div class="finding">
-        <div class="flabel"><span class="tag tag-high">High confidence</span></div>
-        <p>Copilot CLI <code>/research</code> is the closest first-party IDE competitor: saves cited Markdown to <code>~/.copilot/session-state/.../research/</code>, added HTML export in April 2026, includes a "Confidence Assessment" section. <a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener">[docs.github.com]</a> Critical limitation remains: tool list is hardcoded (no user MCP servers, issue #4076 still open as of Sep 8) <a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener">[github.com]</a>, defaults to claude-haiku-4.5, and produces no per-claim evidence file, no confidence-rated atomic store. MCP-based research servers (web-researcher-mcp v1.49.3, Sep 1, 2026; openresearch-mcp; gigaxity-deep-research) provide structured research output but leave full orchestration to the calling agent. <a href="https://github.com/you-com/web-researcher-mcp" target="_blank" rel="noopener">[github.com/web-researcher-mcp]</a> <strong>New Sep 2026 entrant:</strong> Entire Agentic Search (Sep 3) has CLI skill integration and a self-scoring benchmark harness (Searchmark), but targets code-history search, not open-web research. No Aug-Sep 2026 launch fully replicates the deep-research skill's five-pattern stack.</p>
-      </div>
-
-      <h3>Design novelty and academic validation</h3>
-      <div class="finding">
-        <div class="flabel"><span class="tag tag-high">High confidence</span></div>
-        <p>All five design patterns have 2025-2026 academic validation: DAG parallel execution <a href="https://arxiv.org/abs/2509.25301" target="_blank" rel="noopener">[Flash-Searcher]</a> <a href="https://arxiv.org/abs/2602.16873" target="_blank" rel="noopener">[AdaptOrch]</a>; per-claim confidence scoring <a href="https://arxiv.org/abs/2601.15778" target="_blank" rel="noopener">[HTC]</a> <a href="https://arxiv.org/abs/2607.12397" target="_blank" rel="noopener">[CEB]</a>; pre-mortem planning (PreFlect achieves +8.5pp on GAIA over Reflexion) <a href="https://arxiv.org/abs/2602.07187" target="_blank" rel="noopener">[arxiv.org]</a>; self-eval loops (DeepVerifier +8–11% on GAIA) <a href="https://aclanthology.org/2026.findings-acl.1243.pdf" target="_blank" rel="noopener">[aclanthology.org]</a>; atomic evidence stores <a href="https://arxiv.org/abs/2607.28374" target="_blank" rel="noopener">[LedgerMind]</a> <a href="https://arxiv.org/abs/2608.18398" target="_blank" rel="noopener">[LEDGER]</a>. <strong>New Jul-Sep 2026 papers</strong> add depth and nuance: ArcticSwarm and AREX confirm gated isolation multi-agent gains; <strong>Interaction Tax</strong> (Aug 2026) warns that naive multi-agent interaction can erase diversity and degrade synthesis — gains are conditional on structured coordination. <a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener">[arxiv.org]</a> DualStake (Sep 2026, EMNLP) tackles calibrated per-claim confidence scoring. <a href="https://arxiv.org/abs/2509.04821" target="_blank" rel="noopener">[arxiv.org]</a> No surveyed paper combines all five patterns in one installable spec.</p>
-      </div>
-
-      <h3>Developer workflow and market gap</h3>
-      <div class="finding">
-        <div class="flabel"><span class="tag tag-med">Medium-high confidence</span></div>
-        <p>The clearest gap: structured, project-local, auditable research with per-claim full-URL evidence that lives alongside code. Developer sentiment (HN, Reddit, DEV Community Aug-Sep 2026) consistently describes a <strong>hybrid workflow</strong>: chat is good for exploration; file-based artifacts (markdown, structured workspaces) are the "durable truth" layer that compounds over time. Third-party tools (DeepCite, Universal Markdown Exporter) exist precisely because native chat/Deep Research output loses citations. <a href="https://pickuma.com/ai-research-workflow-2026" target="_blank" rel="noopener">[pickuma.com]</a> FS-Researcher confirms file-system workspaces let agents persist artifacts beyond the context window with negligible latency (&lt;0.03% of wall-clock). <a href="https://arxiv.org/html/2602.01566v2" target="_blank" rel="noopener">[arxiv.org]</a> Gap is real but closable: Perplexity Agent API and MCP research servers are the active narrowing vectors. Gartner projects 40%+ of agentic AI initiatives cancelled by 2027. <a href="https://joeyhipolito.dev/newsletter/2026-03-06-ai-agent-frameworks-wrong" target="_blank" rel="noopener">[joeyhipolito.dev]</a></p>
-      </div>
-    </section>
-
-    <section id="confidence">
-      <h2>Evidence confidence</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Claim</th><th>Source</th><th>Freshness</th><th>Confidence</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>34.7% of Perplexity citation markers fail a numerical accuracy check</td>
-              <td><a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="src-link">hausresearch.com</a></td>
-              <td>Sep 2, 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>ChatGPT GPT-5 Deep Research: 79.1% citation accuracy (DeepTRACE)</td>
-              <td><a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener" class="src-link">arxiv.org/DeepTRACE</a></td>
-              <td>Sep 2025 snapshot</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Perplexity: 58.0% citation accuracy (DeepTRACE); Gemini: 40.3%</td>
-              <td><a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener" class="src-link">arxiv.org/DeepTRACE</a></td>
-              <td>Sep 2025 snapshot</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Claude Opus 4.5 achieves 77% factual claim accuracy (14-model study)</td>
-              <td><a href="https://arxiv.org/html/2605.06635" target="_blank" rel="noopener" class="src-link">arxiv.org/2605.06635</a></td>
-              <td>May 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Perplexity retiring Sonar API Sep 27, 2026; sonar-deep-research maps to Agent API high/xhigh</td>
-              <td><a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener" class="src-link">docs.perplexity.ai</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Gemini Deep Research Max MCP regression Sep 4, 2026: tools listed but never invoked</td>
-              <td><a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener" class="src-link">support.google.com</a></td>
-              <td>Sep 4, 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Gemini Deep Research hallucinated URL rate: 13.3% (DRBench); OpenAI: 3.5%</td>
-              <td><a href="https://arxiv.org/html/2604.03173" target="_blank" rel="noopener" class="src-link">arxiv.org/2604.03173</a></td>
-              <td>Apr 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Increased search depth degrades Fact Check accuracy ~42% while Link Works stays above 92%</td>
-              <td><a href="https://arxiv.org/html/2605.06635" target="_blank" rel="noopener" class="src-link">arxiv.org/2605.06635</a></td>
-              <td>May 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>MisKnow-Agent: one misleading doc raises false-conclusion adoption from 0% to 54.7%</td>
-              <td><a href="https://arxiv.org/abs/2607.20891" target="_blank" rel="noopener" class="src-link">arxiv.org/2607.20891</a></td>
-              <td>Jul 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>PreFlect pre-mortem planning achieves +8.5pp on GAIA over Reflexion</td>
-              <td><a href="https://arxiv.org/abs/2602.07187" target="_blank" rel="noopener" class="src-link">arxiv.org/2602.07187</a></td>
-              <td>Feb 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>DeepVerifier self-scoring loop delivers +8–11% accuracy on GAIA without training</td>
-              <td><a href="https://aclanthology.org/2026.findings-acl.1243.pdf" target="_blank" rel="noopener" class="src-link">aclanthology.org ACL 2026</a></td>
-              <td>ACL 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Flash-Searcher DAG parallel reduces steps 35% (11.2→7.4); 67.7% BrowseComp</td>
-              <td><a href="https://arxiv.org/abs/2509.25301" target="_blank" rel="noopener" class="src-link">arxiv.org/2509.25301</a></td>
-              <td>Sep 2025 (ICLR 2026)</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Copilot CLI /research cannot access user-configured MCP servers (issue #4076 open Sep 8, 2026)</td>
-              <td><a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener" class="src-link">github.com/copilot-cli/issues/4076</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Copilot CLI /research added HTML export in April 2026; still produces no atomic CLAIM schema</td>
-              <td><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener" class="src-link">docs.github.com</a></td>
-              <td>2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Microsoft retired consumer Copilot Deep Research on Aug 18, 2026</td>
-              <td><a href="https://support.microsoft.com/en-US/microsoft-copilot/deep-research-in-microsoft-copilot" target="_blank" rel="noopener" class="src-link">support.microsoft.com</a></td>
-              <td>Aug 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>SKILL.md format: agentskills.io lists 41 compliant products as of Sep 2026</td>
-              <td><a href="https://agentskills.io/clients" target="_blank" rel="noopener" class="src-link">agentskills.io/clients</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>firecrawl-deep-research leads skills.sh deep-research leaderboard at 33,752 installs (Sep 8, 2026)</td>
-              <td><a href="https://www.skills.sh/api/search?q=deep-research&limit=20" target="_blank" rel="noopener" class="src-link">skills.sh API</a></td>
-              <td>Sep 8, 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Interaction Tax (Aug 2026): naive multi-agent interaction erases diversity; gains conditional on structured isolation</td>
-              <td><a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener" class="src-link">arxiv.org/2508.14982</a></td>
-              <td>Aug 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Multi-agent research uses ~15× more tokens than ordinary chat</td>
-              <td><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener" class="src-link">anthropic.com</a></td>
-              <td>Jun 2025</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>FS-Researcher: file-system workspace has negligible latency (&lt;0.03% of wall-clock)</td>
-              <td><a href="https://arxiv.org/html/2602.01566v2" target="_blank" rel="noopener" class="src-link">arxiv.org/2602.01566</a></td>
-              <td>2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>No surveyed Aug-Sep 2026 tool launch fully replicates deep-research skill's five-pattern stack</td>
-              <td><a href="https://arxiv.org/abs/2607.20891" target="_blank" rel="noopener" class="src-link">arxiv.org synthesized</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-med">medium</span></td>
-            </tr>
-            <tr>
-              <td>DualStake (EMNLP 2026): per-claim calibrated confidence scoring framework</td>
-              <td><a href="https://arxiv.org/abs/2509.04821" target="_blank" rel="noopener" class="src-link">arxiv.org/2509.04821</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-med">medium</span></td>
-            </tr>
-            <tr>
-              <td>Developer sentiment (HN/Reddit Aug-Sep 2026): hybrid workflow preferred — chat for exploration, files for durable truth</td>
-              <td><a href="https://pickuma.com/ai-research-workflow-2026" target="_blank" rel="noopener" class="src-link">pickuma.com</a></td>
-              <td>2026</td>
-              <td><span class="tag tag-med">medium</span></td>
-            </tr>
-            <tr>
-              <td>TheAdamLabs/deep-research-skill has 1 GitHub star and no skills.sh listing</td>
-              <td><a href="https://github.com/theadamlabs" target="_blank" rel="noopener" class="src-link">github.com/theadamlabs</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-med">medium</span></td>
-            </tr>
-            <tr>
-              <td>SKILL.md workflows ignored ~50% of the time when overlapping built-in model behaviors</td>
-              <td><a href="https://github.com/anthropics/claude-code/issues/30387" target="_blank" rel="noopener" class="src-link">github.com/anthropics/claude-code/issues/30387</a></td>
-              <td>Mar 2026</td>
-              <td><span class="tag tag-high">high</span></td>
-            </tr>
-            <tr>
-              <td>Gartner projects 40%+ of agentic AI initiatives cancelled by 2027</td>
-              <td><a href="https://joeyhipolito.dev/newsletter/2026-03-06-ai-agent-frameworks-wrong" target="_blank" rel="noopener" class="src-link">joeyhipolito.dev</a></td>
-              <td>Mar 2026</td>
-              <td><span class="tag tag-med">medium</span></td>
-            </tr>
-            <tr>
-              <td>Perplexity citation accuracy conflicts sharply across benchmarks: 34.7% numeric failure (Haus) vs 58.0% accuracy (DeepTRACE) vs 90.24% on original DeepResearch Bench</td>
-              <td><a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="src-link">hausresearch.com (conflicted)</a></td>
-              <td>Sep 2026</td>
-              <td><span class="tag tag-conf">conflicted</span></td>
-            </tr>
-            <tr>
-              <td>Confidence tiers are prompt heuristics not calibrated against ECE/AUC benchmark metrics</td>
-              <td><a href="https://arxiv.org/abs/2601.15778" target="_blank" rel="noopener" class="src-link">arxiv.org/2601.15778 (inference)</a></td>
-              <td>Jan 2026</td>
-              <td><span class="tag tag-conf">conflicted</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="sources">
-      <h2>Sources <small style="font-size:12px;font-weight:400;color:var(--muted)">(top 28 by importance)</small></h2>
-      <ol class="sources-list">
-        <li><span class="src-num">1</span><a href="https://hausresearch.com/reports/perplexity-citation-audit/" target="_blank" rel="noopener" class="src-link">https://hausresearch.com/reports/perplexity-citation-audit/</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 2, 2026</span></li>
-        <li><span class="src-num">2</span><a href="https://arxiv.org/abs/2509.01245" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2509.01245 (DeepTRACE citation ranking)</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 2025</span></li>
-        <li><span class="src-num">3</span><a href="https://arxiv.org/html/2604.03173" target="_blank" rel="noopener" class="src-link">https://arxiv.org/html/2604.03173 (DRBench)</a><span class="src-meta"><span class="tag tag-high">high</span>Apr 2026</span></li>
-        <li><span class="src-num">4</span><a href="https://arxiv.org/html/2605.06635" target="_blank" rel="noopener" class="src-link">https://arxiv.org/html/2605.06635</a><span class="src-meta"><span class="tag tag-high">high</span>May 2026</span></li>
-        <li><span class="src-num">5</span><a href="https://docs.perplexity.ai/guides/agent-api-guide" target="_blank" rel="noopener" class="src-link">https://docs.perplexity.ai/guides/agent-api-guide (Agent API)</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 2026</span></li>
-        <li><span class="src-num">6</span><a href="https://support.google.com/gemini/thread/380184729" target="_blank" rel="noopener" class="src-link">https://support.google.com/gemini/thread/380184729 (Gemini MCP regression)</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 4, 2026</span></li>
-        <li><span class="src-num">7</span><a href="https://arxiv.org/abs/2508.14982" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2508.14982 (Interaction Tax)</a><span class="src-meta"><span class="tag tag-high">high</span>Aug 2026</span></li>
-        <li><span class="src-num">8</span><a href="https://arxiv.org/abs/2509.04821" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2509.04821 (DualStake, EMNLP 2026)</a><span class="src-meta"><span class="tag tag-med">medium</span>Sep 2026</span></li>
-        <li><span class="src-num">9</span><a href="https://arxiv.org/abs/2607.20891" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2607.20891 (MisKnow-Agent)</a><span class="src-meta"><span class="tag tag-high">high</span>Jul 2026</span></li>
-        <li><span class="src-num">10</span><a href="https://arxiv.org/abs/2602.07187" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2602.07187 (PreFlect)</a><span class="src-meta"><span class="tag tag-high">high</span>Feb 2026</span></li>
-        <li><span class="src-num">11</span><a href="https://aclanthology.org/2026.findings-acl.1243.pdf" target="_blank" rel="noopener" class="src-link">https://aclanthology.org/2026.findings-acl.1243.pdf (DeepVerifier)</a><span class="src-meta"><span class="tag tag-high">high</span>ACL 2026</span></li>
-        <li><span class="src-num">12</span><a href="https://arxiv.org/abs/2509.25301" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2509.25301 (Flash-Searcher)</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 2025</span></li>
-        <li><span class="src-num">13</span><a href="https://arxiv.org/abs/2601.15778" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2601.15778 (HTC calibration)</a><span class="src-meta"><span class="tag tag-high">high</span>Jan 2026</span></li>
-        <li><span class="src-num">14</span><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research" target="_blank" rel="noopener" class="src-link">https://docs.github.com/en/copilot/concepts/agents/copilot-cli/research</a><span class="src-meta"><span class="tag tag-high">high</span>2026</span></li>
-        <li><span class="src-num">15</span><a href="https://github.com/github/copilot-cli/issues/4076" target="_blank" rel="noopener" class="src-link">https://github.com/github/copilot-cli/issues/4076</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 2026</span></li>
-        <li><span class="src-num">16</span><a href="https://support.microsoft.com/en-US/microsoft-copilot/deep-research-in-microsoft-copilot" target="_blank" rel="noopener" class="src-link">https://support.microsoft.com/en-US/microsoft-copilot/deep-research-in-microsoft-copilot</a><span class="src-meta"><span class="tag tag-high">high</span>Aug 2026</span></li>
-        <li><span class="src-num">17</span><a href="https://agentskills.io/clients" target="_blank" rel="noopener" class="src-link">https://agentskills.io/clients (41 compliant products)</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 2026</span></li>
-        <li><span class="src-num">18</span><a href="https://www.skills.sh/api/search?q=deep-research&limit=20" target="_blank" rel="noopener" class="src-link">https://www.skills.sh/api/search?q=deep-research&limit=20</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 8, 2026</span></li>
-        <li><span class="src-num">19</span><a href="https://arxiv.org/html/2602.01566v2" target="_blank" rel="noopener" class="src-link">https://arxiv.org/html/2602.01566v2 (FS-Researcher)</a><span class="src-meta"><span class="tag tag-high">high</span>2026</span></li>
-        <li><span class="src-num">20</span><a href="https://arxiv.org/abs/2602.16873" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2602.16873 (AdaptOrch)</a><span class="src-meta"><span class="tag tag-high">high</span>Feb 2026</span></li>
-        <li><span class="src-num">21</span><a href="https://arxiv.org/abs/2607.28374" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2607.28374 (LedgerMind)</a><span class="src-meta"><span class="tag tag-high">high</span>Jul 2026</span></li>
-        <li><span class="src-num">22</span><a href="https://arxiv.org/abs/2608.18398" target="_blank" rel="noopener" class="src-link">https://arxiv.org/abs/2608.18398 (LEDGER)</a><span class="src-meta"><span class="tag tag-high">high</span>Aug 2026</span></li>
-        <li><span class="src-num">23</span><a href="https://github.com/anthropics/claude-code/issues/30387" target="_blank" rel="noopener" class="src-link">https://github.com/anthropics/claude-code/issues/30387</a><span class="src-meta"><span class="tag tag-high">high</span>Mar 2026</span></li>
-        <li><span class="src-num">24</span><a href="https://www.theregister.com/ai-and-ml/2026/06/30/claude-code-users-complain-their-chat-records-are-being-mysteriously-wiped-out/5264673" target="_blank" rel="noopener" class="src-link">https://www.theregister.com/…/claude-code-users-chat-records-wiped/</a><span class="src-meta"><span class="tag tag-high">high</span>Jun 2026</span></li>
-        <li><span class="src-num">25</span><a href="https://github.com/you-com/web-researcher-mcp" target="_blank" rel="noopener" class="src-link">https://github.com/you-com/web-researcher-mcp (v1.49.3)</a><span class="src-meta"><span class="tag tag-high">high</span>Sep 1, 2026</span></li>
-        <li><span class="src-num">26</span><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener" class="src-link">https://www.anthropic.com/engineering/multi-agent-research-system</a><span class="src-meta"><span class="tag tag-high">high</span>Jun 2025</span></li>
-        <li><span class="src-num">27</span><a href="https://www.learncursor.dev/learn/cursor-agents/cursor-agent-skills" target="_blank" rel="noopener" class="src-link">https://www.learncursor.dev/learn/cursor-agents/cursor-agent-skills</a><span class="src-meta"><span class="tag tag-med">medium</span>2026</span></li>
-        <li><span class="src-num">28</span><a href="https://stangeli.substack.com/p/building-a-research-environment-that" target="_blank" rel="noopener" class="src-link">https://stangeli.substack.com/p/building-a-research-environment-that</a><span class="src-meta"><span class="tag tag-med">medium</span>Jul 2026</span></li>
-      </ol>
-    </section>
-
-    <section id="gaps">
-      <h2>Gaps &amp; follow-up</h2>
-      <h3>What couldn't be found</h3>
-      <ul class="gap-list">
-        <li>No independent end-to-end benchmark comparing deep-research skill vs. Copilot CLI <code>/research</code> on the same query.</li>
-        <li><code>TheAdamLabs/deep-research-skill</code> is not indexed on skills.sh — no tracked install count or adoption data. 1 GitHub star as of Sep 8.</li>
-        <li>Confidence tiers are prompt heuristics with no calibration against ECE/AUC metrics (gap confirmed by DualStake paper at EMNLP 2026).</li>
-        <li>No data on whether the Gemini Deep Research Max MCP regression was fully resolved by Sep 7 as promised.</li>
-        <li>Perplexity Agent API full feature parity with Sonar API after Sep 27 retirement not yet confirmable from live usage.</li>
-        <li>Perplexity citation accuracy conflicts sharply across benchmarks: 34.7% numeric failure (Haus) vs 58.0% accuracy (DeepTRACE) vs 90.24% on original DeepResearch Bench — different product surfaces and metrics.</li>
-        <li>No large-scale quantitative developer survey on file-based vs chat research artifact preference exists; all sentiment is practitioner-reported.</li>
-      </ul>
-      <h3>Follow-up questions</h3>
-      <ul class="followup-list">
-        <li>How does evidence quality compare to Copilot CLI <code>/research</code> on the same query, end-to-end? (Still the most valuable unanswered question.)</li>
-        <li>Should confidence tiers be backed by automated URL reachability + snippet verification (as DualStake does) to move from prompt heuristics to real calibration?</li>
-        <li>Is there a path to skills.sh indexing for discoverability — and would it materially increase adoption vs firecrawl-deep-research (33,752 installs)?</li>
-        <li>Does the Perplexity Agent API's MCP + structured steps (post-Sep 27) represent a real narrowing of the evidence schema gap, or is the CLAIM/SOURCE/FRESHNESS/CONFIDENCE layer still unique?</li>
-      </ul>
-    </section>
-  </main>
-
   <script>
+    // active nav highlight
     const sections = document.querySelectorAll('section[id]');
-    const sideLinks = document.querySelectorAll('#sidebar a[href^="#"]');
-    const mobileLinks = document.querySelectorAll('#mobilebar a[href^="#"]');
-    const allLinks = [...sideLinks, ...mobileLinks];
-
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           const id = '#' + e.target.id;
-          allLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === id));
+          navLinks.forEach(a => {
+            const active = a.getAttribute('href') === id;
+            a.classList.toggle('bg-primary/20', active);
+            a.classList.toggle('text-white', active);
+          });
         }
       });
     }, { rootMargin: '-10% 0px -80% 0px' });
-
     sections.forEach(s => observer.observe(s));
+
+    // confidence donut
+    const d = document.getElementById('confidence-donut');
+    if (d) {
+      const h = +(d.dataset.high) || 0, m = +(d.dataset.med) || 0,
+            l = +(d.dataset.low) || 0, c = +(d.dataset.conf) || 0;
+      const t = h + m + l + c || 1; let a = 0;
+      const seg = (deg, col) => { const s = `${col} ${a.toFixed(1)}deg ${(a + deg).toFixed(1)}deg`; a += deg; return s; };
+      const td = n => (n / t) * 360;
+      d.style.background = `conic-gradient(${[
+        seg(td(h), '#16a34a'), seg(td(m), '#d97706'),
+        seg(td(l), '#dc2626'), seg(td(c), '#7c3aed')
+      ].join(',')})`;
+    }
   </script>
 </body>
 </html>
