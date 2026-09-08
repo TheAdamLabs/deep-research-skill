@@ -73,6 +73,9 @@
     .donut-legend { display: flex; flex-direction: column; gap: 4px; }
     .donut-legend span { font-size: 12px; }
 
+    /* Headline finding (summary landing page) */
+    .headline-finding { font-size: 18px; font-weight: 500; line-height: 1.7; color: var(--text); margin: 0 0 24px; padding: 20px 24px; background: var(--surface); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; }
+
     /* Takeaways */
     .takeaways { list-style: none; padding: 0; margin: 0 0 16px; }
     .takeaways li { display: flex; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 14.5px; }
@@ -230,12 +233,34 @@
     <p class="meta">[DATE] &nbsp;·&nbsp; [N_SOURCES] sources &nbsp;·&nbsp; [QUERY_TYPE] query</p>
 
     <!-- ============================================================
-         #summary
-         Fill in: scores, donut counts, 3 key takeaways
+         #summary : LANDING PAGE — put the answer here, not just scores.
+
+         1. headline-finding: 1-2 sentence direct answer to the query.
+            What did you find? What is the recommendation? Be specific.
+         2. key-insights: 4-6 substantive bullets, each with a source link.
+            These should be the most valuable findings — not restatements of the query.
+         3. score cards + donut: research quality metadata (below the content).
+         4. takeaways: 3-5 supporting details or nuances (below the scores).
+
+         Count CLAIM lines in evidence.md by tier for data-high/med/low/conf.
     ============================================================ -->
     <section id="summary">
       <h2>Summary</h2>
-      <div class="total-score">Overall score: [SCORE] / 12</div>
+
+      <!-- Direct answer: 1-2 sentences -->
+      <p class="headline-finding">[HEADLINE_FINDING]</p>
+
+      <!-- Key insights: 4-6 sourced findings -->
+      <ul class="takeaways" id="key-insights">
+        <li>[INSIGHT_1] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
+        <li>[INSIGHT_2] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
+        <li>[INSIGHT_3] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
+        <li>[INSIGHT_4] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
+        <li>[INSIGHT_5] <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a></li>
+      </ul>
+
+      <!-- Research quality metadata -->
+      <div class="total-score">Research quality: [SCORE] / 12</div>
       <div class="summary-top">
         <div style="flex:1">
           <div class="score-grid">
@@ -245,7 +270,6 @@
             <div class="score-card"><div class="num">[F]/3</div><div class="label">Artifact fit</div></div>
           </div>
         </div>
-        <!-- Count CLAIM lines in evidence.md by confidence tier for data-* values -->
         <div class="donut-wrap">
           <div id="confidence-donut"
             data-high="[COUNT_HIGH]"
@@ -263,12 +287,15 @@
           </div>
         </div>
       </div>
+
+      <!-- Supporting nuances / caveats -->
       <h3>Key takeaways</h3>
       <ul class="takeaways">
-        <!-- 3 most important findings; each ends with [[domain]](url) source link -->
         <li>[TAKEAWAY_1]</li>
         <li>[TAKEAWAY_2]</li>
         <li>[TAKEAWAY_3]</li>
+        <li>[TAKEAWAY_4]</li>
+        <li>[TAKEAWAY_5]</li>
       </ul>
     </section>
 
@@ -333,65 +360,19 @@
 
     <!-- ============================================================
          #findings : MAIN RESEARCH ARTIFACT
-         Use the CORRECT component for your query type. NEVER put a table
-         with more than 3 columns here. Every factual claim needs an inline
-         <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>.
+         Write your synthesis here in whatever format best communicates the findings.
+         Every factual claim needs: <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>
 
-         COMPARATIVE (2-5 options) — option cards:
-         -------------------------------------------------------
-         <div class="option-grid">
-           <div class="option-card">
-             <div class="option-card-name">[Option A]</div>
-             <div class="option-card-verdict positive">Recommended</div>
-             <div class="option-dim"><span class="option-dim-label">[Dimension 1]</span><span class="option-dim-value">[value] <a href="[url]" class="src-link">[src]</a></span></div>
-             <div class="option-dim"><span class="option-dim-label">[Dimension 2]</span><span class="option-dim-value">[value]</span></div>
-           </div>
-           <!-- repeat .option-card for each option -->
-         </div>
-
-         COMPARATIVE (6+ options or 8+ dimensions) — heatmap in #charts + brief prose here
-
-         DECISION — verdict box + why + risks:
-         -------------------------------------------------------
-         <div class="verdict-box positive">
-           <div class="verdict-label">Verdict</div>
-           <div class="verdict-text">[Recommendation sentence.]</div>
-           <div class="verdict-source"><a href="[url]" class="src-link">[primary source]</a></div>
-         </div>
-         <h3>Why</h3>
-         <ul class="takeaways">...</ul>
-         <h3>Risks</h3>
-         <ul class="gap-list">...</ul>
-
-         EXPLORATORY / SYNTHESIS — claim list by confidence tier:
-         -------------------------------------------------------
-         <h3>High-confidence findings</h3>
-         <ul class="claim-list">
-           <li>[Claim] <a href="[url]" class="src-link">[domain]</a></li>
-         </ul>
-         <h3>Moderate confidence</h3>
-         <ul class="claim-list">
-           <li class="med">[Claim] <a href="[url]" class="src-link">[domain]</a></li>
-         </ul>
-         <h3>Contested or unclear</h3>
-         <ul class="claim-list">
-           <li class="conf">[Claim]</li>
-         </ul>
-
-         TEMPORAL — narrow 2-col timeline table:
-         -------------------------------------------------------
-         <div class="table-wrap">
-           <table class="timeline-table">
-             <thead><tr><th>Year</th><th>Event</th></tr></thead>
-             <tbody>
-               <tr><td>[Year]</td><td>[Event] <a href="[url]" class="src-link">[src]</a></td></tr>
-             </tbody>
-           </table>
-         </div>
+         Optional components available (see CSS):
+           .option-grid / .option-card (.option-card-verdict .positive/.neutral/.negative)
+           .verdict-box (.positive / .negative / .neutral)
+           .claim-list (.med / .low / .conf)
+           table.timeline-table  (narrow 2-col chronological)
+         Plain h3 + p + ul is also fine.
     ============================================================ -->
     <section id="findings">
       <h2>Findings</h2>
-      <!-- POPULATE using the skeletons above -->
+      <!-- POPULATE with your synthesis -->
     </section>
 
     <!-- ============================================================

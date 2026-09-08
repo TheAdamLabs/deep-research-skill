@@ -38,7 +38,7 @@ Classify the query. Write this analysis in chat (briefly) before proceeding.
 
 **Failure mode:** what would make this answer wrong or useless? (outdated sources / biased sources / missing key dimension)
 
-**Artifact template:** which Phase 6 template applies?
+**Answer format:** what is the most natural structure for the answer? (narrative, ranked list, recommendation+evidence, timeline, comparison)
 
 **Deliverables:** decide here what files to produce, based on query complexity:
 
@@ -87,7 +87,7 @@ Before executing, run a skeptic pass. Add any blind spots as new sub-questions.
 - **Scope drift**: Am I answering a slightly different (easier) question than asked?
 - **Load-bearing assumption**: What does the entire plan rest on that hasn't been verified?
 
-State findings. If framing is wrong, re-run Phase 1 and 2 before proceeding.
+Adjust the plan if needed before proceeding.
 
 ---
 
@@ -205,49 +205,13 @@ For each gap requiring more research, spawn one subagent per gap (in parallel if
 
 ## Phase 6: Synthesis
 
-Synthesize your findings into a structured artifact. **Do not write to a file yet**: the synthesis will be written directly into `dashboard.html` `#findings` in Phase 8. Hold it in context.
+Hold in context -- do not write to a file yet.
 
-**Do not write prose summaries. Use the template for the query type from Phase 1.**
+Synthesize what you found into a clear, direct answer. Write it as you naturally would: prose narrative, structured lists, a recommendation with evidence, whatever form best communicates the findings. Do not force a format.
 
-**Citation rule for every template below:** every factual claim must carry an inline source link using the format `[[domain.com]](https://full-url)`. No claim without a source. In tables, add a source column or superscript footnotes rather than omitting citations.
+Every factual claim must end with an inline source link `[[domain.com]](https://full-url)`. Note where sources conflict. Note what you could not find.
 
-### Comparative (2-5 options)
-
-**`#findings` component: `.option-grid` + `.option-card`**
-One card per option; list every dimension vertically inside the card using `.option-dim` rows. Add `.option-card-verdict` (class `positive`/`neutral`/`negative`) to each card. NEVER write a wide table for comparative findings. If you have 6+ options or 8+ dimensions, use a `.heatmap` in `#charts` and write a short ranked prose summary in `#findings` only.
-
-Citation rule: every `.option-dim-value` that is a factual claim must end with an inline `<a href="[url]" class="src-link">[domain]</a>`.
-
-**`#charts` components:** `.hbar-group` (one per dimension, `data-val="0-100"`) + `.heatmap` (3+ options / 4+ dims). See `dashboard-template.html` `#charts` comments for HTML.
-
-### Temporal
-
-**`#findings` component: `<table class="timeline-table">`**
-Two columns only: Year (or period) and Event. Wrap in `<div class="table-wrap">`. Every Event cell gets an inline source link. Follow with a "Key turning points" prose paragraph (2-3 sentences, each with a source link).
-
-**`#charts` component:** SVG timeline (`.timeline-svg`, viewBox 900x160); x = 40 + ((year-min)/(max-min)) * 820; circle r: high=8, med=6, low=4; conflicted adds `stroke-dasharray="4 2"`. Alternate label y: above=58, below=108. See template for SVG skeleton.
-
-### Decision
-
-**`#findings` component: `.verdict-box`** (class `positive`/`negative`/`neutral`) for the recommendation sentence.
-Follow with:
-- `<h3>Why</h3><ul class="takeaways">` (each `<li>` ends with a source link)
-- `<h3>Risks</h3><ul class="gap-list">` (each `<li>` ends with a source link)
-
-**`#charts` component:** `.bar-chart`; score each option 0-10 from evidence weight; `data-val` = score * 10; color by tier (>=70 `var(--high)`, 40-69 `var(--med)`, <40 `var(--low)`). Tallest bar = recommended option.
-
-### Exploratory / Synthesis
-
-**`#findings` component: `.claim-list`** grouped under confidence headings.
-- High-confidence: `<li>` (default green left-border)
-- Moderate: `<li class="med">`
-- Contested/unclear: `<li class="conf">`
-
-Every `<li>` that is a factual claim ends with an inline source link.
-
-**`#charts` component:** concept cluster SVG (`.concept-svg`, viewBox 700x400); center node at (350,200) r=40; 5-8 satellites at r=140 evenly-spaced angles; satellite border color = confidence tier.
-
-**All query types:** `#summary` confidence donut: count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md`, set `data-high/med/low/conf` on `#confidence-donut`. The JS renders the `conic-gradient` automatically.
+For the confidence donut: count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md` -- you will need these totals for `data-high/med/low/conf` on `#confidence-donut` in Phase 8.
 
 ---
 
@@ -294,18 +258,13 @@ The skill directory is the directory containing this SKILL.md file (e.g. `/Users
 
 2. **Write the complete dashboard** to `[output-dir]/dashboard.html` using the template as your structural base. Populate every placeholder in a single `Write` call: do not use StrReplace on placeholders. You have full freedom to adapt the structure for your query type.
 
-**Layout rules (strict) -- choose the `#findings` component by data shape:**
+The template ships with these optional layout components -- use them where they help, skip them where plain HTML fits better:
+- `.option-grid` + `.option-card`: side-by-side cards for 2-6 named options
+- `.verdict-box .positive/.negative/.neutral`: a highlighted recommendation box
+- `.claim-list` (`.med` / `.low` / `.conf`): left-bordered list with confidence tiers
+- `table.timeline-table`: narrow 2-col table for chronological data
 
-| Data shape | `#findings` component | `#charts` component |
-|---|---|---|
-| 2-5 options x any dimensions | `.option-grid` + `.option-card` | `.hbar-group` per dimension |
-| 6+ options or 8+ dimensions | prose summary only | `.heatmap` |
-| Yes/no/should-we recommendation | `.verdict-box` | `.bar-chart` scoring options |
-| Confidence-graded claim list | `.claim-list` | concept cluster SVG |
-| Chronological events | 2-col `<table class="timeline-table">` | SVG timeline |
-| Ranked/scored options | `.option-grid` with `.option-card-verdict` | `.bar-chart` |
-
-**STOP rule: if you are about to write a `<table>` with more than 3 columns inside `#findings`, stop and use `.option-grid` or `.claim-list` instead.**
+Plain `<h3>` + `<p>` + `<ul>` works fine for most findings. Choose what fits the data.
 
 **What to populate in each section:**
 
@@ -313,10 +272,10 @@ The skill directory is the directory containing this SKILL.md file (e.g. `/Users
 |---|---|
 | `<title>` and `<h1>` | Query title |
 | `.nav-meta`, `.meta` | Date, source count, score |
-| `#summary` score cards + donut | Phase 7 scores; count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md` |
-| `#charts` | Phase 6 visual supplements for your query type (see layout rules above) |
-| `#findings` | Your Phase 6 synthesis using the correct component (see layout rules above) |
-| `#confidence` tbody | One `<tr>` per key claim from `evidence.md` (curate to most important ~20-40 for long runs) |
+| `#summary` | Direct answer as `.headline-finding`; 4-6 key insights; then scores and donut |
+| `#charts` | Visual that best supports your findings (optional for simple queries) |
+| `#findings` | Your Phase 6 synthesis -- best format for the data |
+| `#confidence` tbody | One `<tr>` per key claim from `evidence.md` (curate to ~20-40 for long runs) |
 | `#sources` | One `<li>` per unique URL from `evidence.md`, ordered by confidence then freshness |
 | `#gaps` | Gaps and follow-up questions from your synthesis |
 
