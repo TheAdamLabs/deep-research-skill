@@ -50,7 +50,7 @@ Classify the query. Write this analysis in chat (briefly) before proceeding.
 
 `evidence.md` is an intermediate pipeline file (subagents write to it; you read it to populate the dashboard). It is not a user deliverable. `dashboard.html` is the single user-facing output for every run.
 
-`dashboard.html` always earns its cost -- it is the only output file users read. For simple factual queries, generate a minimal dashboard (summary + findings only, skip charts and confidence table).
+`dashboard.html` always earns its cost: it is the only output file users read. For simple factual queries, generate a minimal dashboard (summary + findings only, skip charts and confidence table).
 
 State the chosen deliverables here. This is the plan. Do not add files not listed.
 
@@ -205,7 +205,7 @@ For each gap requiring more research, spawn one subagent per gap (in parallel if
 
 ## Phase 6: Synthesis
 
-Synthesize your findings into a structured artifact. **Do not write to a file yet** -- the synthesis will be written directly into `dashboard.html` `#findings` in Phase 8. Hold it in context.
+Synthesize your findings into a structured artifact. **Do not write to a file yet**: the synthesis will be written directly into `dashboard.html` `#findings` in Phase 8. Hold it in context.
 
 **Do not write prose summaries. Use the template for the query type from Phase 1.**
 
@@ -227,7 +227,7 @@ Synthesize your findings into a structured artifact. **Do not write to a file ye
 [What sources disagreed on, what couldn't be found (each conflict cites both URLs)]
 ```
 
-**Visual supplements (comparative):** `#charts` -- horizontal comparison bars (`.hbar-group`, one per dimension; `data-val="0-100"`) + heat-map matrix (`.heatmap`, for 3+ options / 4+ dims). `#findings` -- mermaid `flowchart LR` decision tree as `<pre class="mermaid">`. See `dashboard-template.html` `#charts` comments for HTML examples.
+**Visual supplements (comparative):** `#charts`: horizontal comparison bars (`.hbar-group`, one per dimension; `data-val="0-100"`) + heat-map matrix (`.heatmap`, for 3+ options / 4+ dims). `#findings`: mermaid `flowchart LR` decision tree as `<pre class="mermaid">`. See `dashboard-template.html` `#charts` comments for HTML examples.
 
 ### Temporal -> Timeline
 
@@ -242,7 +242,7 @@ Synthesize your findings into a structured artifact. **Do not write to a file ye
 [2-3 sentences on inflection points, each ending with [[domain.com]](url)]
 ```
 
-**Visual supplements (temporal):** `#charts` -- SVG timeline (`.timeline-svg`, viewBox 900x160); x = 40 + ((year-min)/(max-min)) * 820; circle r: high=8, med=6, low=4; conflicted adds `stroke-dasharray="4 2"`; each circle is an `<a>` to its source. Alternate label y: above=58, below=108. `#findings` -- mermaid `timeline` diagram as `<pre class="mermaid">`. See template for SVG skeleton.
+**Visual supplements (temporal):** `#charts`: SVG timeline (`.timeline-svg`, viewBox 900x160); x = 40 + ((year-min)/(max-min)) * 820; circle r: high=8, med=6, low=4; conflicted adds `stroke-dasharray="4 2"`; each circle is an `<a>` to its source. Alternate label y: above=58, below=108. `#findings`: mermaid `timeline` diagram as `<pre class="mermaid">`. See template for SVG skeleton.
 
 ### Decision -> Brief + Evidence
 
@@ -264,7 +264,7 @@ Synthesize your findings into a structured artifact. **Do not write to a file ye
 [Organized by sub-question; every claim has [[domain]](url)]
 ```
 
-**Visual supplements (decision):** `#charts` -- vertical bar chart (`.bar-chart`); score each option 0-10 from evidence weight; `data-val` = score * 10; color by tier (>=7 `var(--high)`, 4-6 `var(--med)`, <4 `var(--low)`). Tallest bar = recommended option. No extra diagram in `#findings` needed.
+**Visual supplements (decision):** `#charts`: vertical bar chart (`.bar-chart`); score each option 0-10 from evidence weight; `data-val` = score * 10; color by tier (>=7 `var(--high)`, 4-6 `var(--med)`, <4 `var(--low)`). Tallest bar = recommended option. No extra diagram in `#findings` needed.
 
 ### Exploratory / Synthesis -> Claim Map
 
@@ -284,9 +284,9 @@ Synthesize your findings into a structured artifact. **Do not write to a file ye
 [Narrative only where structure doesn't fit; keep under 200 words, inline citations throughout]
 ```
 
-**Visual supplements (exploratory/synthesis):** `#charts` -- concept cluster SVG (`.concept-svg`, viewBox 700x400); center node at (350,200) r=40; 5-8 satellites at r=140 evenly-spaced angles; spoke lines from center; satellite border color = confidence tier. `#findings` -- mermaid `mindmap` as `<pre class="mermaid">`.
+**Visual supplements (exploratory/synthesis):** `#charts`: concept cluster SVG (`.concept-svg`, viewBox 700x400); center node at (350,200) r=40; 5-8 satellites at r=140 evenly-spaced angles; spoke lines from center; satellite border color = confidence tier. `#findings`: mermaid `mindmap` as `<pre class="mermaid">`.
 
-**All query types:** `#summary` confidence donut -- count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md`, set `data-high/med/low/conf` on `#confidence-donut`. The JS renders the `conic-gradient` automatically.
+**All query types:** `#summary` confidence donut: count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md`, set `data-high/med/low/conf` on `#confidence-donut`. The JS renders the `conic-gradient` automatically.
 
 ---
 
@@ -331,7 +331,7 @@ cat [skill-directory]/dashboard-template.html
 ```
 The skill directory is the directory containing this SKILL.md file (e.g. `/Users/you/.cursor/skills/deep-research/`).
 
-2. **Write the complete dashboard** to `[output-dir]/dashboard.html` using the template as your structural base. Populate every placeholder in a single `Write` call -- do not use StrReplace on placeholders. You have full freedom to adapt the structure for your query type.
+2. **Write the complete dashboard** to `[output-dir]/dashboard.html` using the template as your structural base. Populate every placeholder in a single `Write` call: do not use StrReplace on placeholders. You have full freedom to adapt the structure for your query type.
 
 **What to populate in each section:**
 
@@ -341,7 +341,7 @@ The skill directory is the directory containing this SKILL.md file (e.g. `/Users
 | `.nav-meta`, `.meta` | Date, source count, score |
 | `#summary` score cards + donut | Phase 7 scores; count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md` |
 | `#charts` | Phase 6 visual supplements for your query type (see instructions above) |
-| `#findings` | Your Phase 6 synthesis -- the full structured artifact (table / timeline / brief / claim map) |
+| `#findings` | Your Phase 6 synthesis: the full structured artifact (table / timeline / brief / claim map) |
 | `#confidence` tbody | One `<tr>` per key claim from `evidence.md` (curate to most important ~20-40 for long runs) |
 | `#sources` | One `<li>` per unique URL from `evidence.md`, ordered by confidence then freshness |
 | `#gaps` | Gaps and follow-up questions from your synthesis |
@@ -363,7 +363,7 @@ Final chat message: short, always.
 
 ```
 Research complete. Score: [X]/12 · [N] searches · [N] sources
-Charts: [list chart types included, e.g. "donut, comparison bars" -- or "none" for simple queries]
+Charts: [list chart types included, e.g. "donut, comparison bars": or "none" for simple queries]
 
 📁 [output directory path]
   dashboard.html: [one-phrase description of the artifact]
@@ -376,7 +376,7 @@ Follow-up: [1-2 questions worth pursuing]
 - Never paste research content into chat
 - `dashboard.html` is always produced; `evidence.md` is a working file, do not mention it in the output summary
 - If the answer is genuinely unresolvable, say so directly in key finding
-- **Never use em dashes (—) in any output file or chat message.** Replace with a colon, comma, semicolon, period, or parentheses as appropriate.
+- **Never use em dashes (:) in any output file or chat message.** Replace with a colon, comma, semicolon, period, or parentheses as appropriate.
 
 ---
 

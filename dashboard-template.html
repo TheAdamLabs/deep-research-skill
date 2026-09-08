@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>[QUERY_TITLE] -- Deep Research</title>
+  <title>[QUERY_TITLE]: Deep Research</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
@@ -234,11 +234,11 @@
     </section>
 
     <!-- ============================================================
-         #charts  -- QUERY-TYPE-SPECIFIC VISUALS
+         #charts : QUERY-TYPE-SPECIFIC VISUALS
          Pick the right chart(s) for your query type; remove the rest.
-         All charts use inline data-* attributes + the JS below -- no libraries.
+         All charts use inline data-* attributes + the JS below: no libraries.
 
-         COMPARATIVE -- horizontal comparison bars per dimension:
+         COMPARATIVE: horizontal comparison bars per dimension:
            <div class="hbar-group">
              <div class="hbar-label">[Dimension]</div>
              <div class="hbar-row">
@@ -250,14 +250,14 @@
              </div>
            </div>
 
-         COMPARATIVE (3+ options, 4+ dimensions) -- heat-map matrix:
+         COMPARATIVE (3+ options, 4+ dimensions): heat-map matrix:
            <div class="heatmap" style="grid-template-columns: 140px repeat([N], 1fr)">
              <div class="hm-head"></div><div class="hm-head">[Option]</div>...
              <div class="hm-cell-label">[Dimension]</div>
              <div class="hm-cell tag-high">[value]</div>...
            </div>
 
-         DECISION -- vertical ranked bar chart (tallest = recommended):
+         DECISION: vertical ranked bar chart (tallest = recommended):
            <div class="bar-chart-wrap">
              <div class="bar-chart">
                <div class="bar-col">
@@ -269,7 +269,7 @@
              <div class="bar-chart-caption">Evidence-weighted score (0-10)</div>
            </div>
 
-         TEMPORAL -- SVG timeline (x proportional to year range):
+         TEMPORAL: SVG timeline (x proportional to year range):
            <div class="timeline-wrap">
            <svg class="timeline-svg" viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg">
              <line x1="40" y1="80" x2="860" y2="80" stroke="var(--border)" stroke-width="2"/>
@@ -279,7 +279,7 @@
              wrap each circle in <a href="[source_url]" target="_blank" rel="noopener">
            </svg></div>
 
-         EXPLORATORY / SYNTHESIS -- concept cluster SVG (5-8 satellite nodes):
+         EXPLORATORY / SYNTHESIS: concept cluster SVG (5-8 satellite nodes):
            <div class="concept-wrap">
            <svg class="concept-svg" viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
              center node at (350,200) r=40; satellites at r=140 evenly-spaced angles
@@ -293,7 +293,7 @@
     </section>
 
     <!-- ============================================================
-         #findings  -- MAIN RESEARCH ARTIFACT
+         #findings : MAIN RESEARCH ARTIFACT
          Populate directly from your Phase 6 synthesis.
          Query-type formats:
            comparative  -> comparison table with source links per cell
@@ -310,7 +310,7 @@
     </section>
 
     <!-- ============================================================
-         #confidence  -- EVIDENCE TABLE
+         #confidence : EVIDENCE TABLE
          One row per claim from evidence.md (or a curated subset for long runs).
          Ordered by importance; include all load-bearing claims.
     ============================================================ -->
@@ -335,7 +335,7 @@
     </section>
 
     <!-- ============================================================
-         #sources  -- UNIQUE URL LIST
+         #sources : UNIQUE URL LIST
          One <li> per unique URL from evidence.md, ordered by confidence then freshness.
     ============================================================ -->
     <section id="sources">
@@ -352,7 +352,7 @@
     </section>
 
     <!-- ============================================================
-         #gaps  -- GAPS AND FOLLOW-UP QUESTIONS
+         #gaps : GAPS AND FOLLOW-UP QUESTIONS
     ============================================================ -->
     <section id="gaps">
       <h2>Gaps &amp; follow-up</h2>
@@ -368,7 +368,7 @@
   </main>
 
   <script>
-    // --- Scroll-spy nav highlight ---
+    // Scroll-spy nav highlight
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('nav a');
     const observer = new IntersectionObserver(entries => {
@@ -380,7 +380,7 @@
     }, { threshold: 0.3 });
     sections.forEach(s => observer.observe(s));
 
-    // --- Confidence donut (conic-gradient from data-* counts) ---
+    // Confidence donut (conic-gradient from data-* counts)
     const donut = document.getElementById('confidence-donut');
     if (donut) {
       const h = +(donut.dataset.high) || 0;
@@ -403,7 +403,7 @@
       donut.style.background = `conic-gradient(${gradient})`;
     }
 
-    // --- Animate bars on load ---
+    // Animate bars on load
     requestAnimationFrame(() => {
       // Horizontal bars: data-val = 0-100 -> width %
       document.querySelectorAll('.hbar[data-val]').forEach(b => {
