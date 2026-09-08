@@ -310,13 +310,16 @@ All component patterns you need are in the section guide below. If you need more
 
 ### Section guide
 
-**`#summary`** -- put the answer first, scores second.
-1. Headline: `<div class="border-l-4 border-primary bg-base-100 rounded-r-xl px-5 py-4 font-medium leading-relaxed mb-6">` (1-2 sentence direct answer)
-2. Key insights: 4-6 `<li>` rows in `bg-base-100 rounded-xl border border-base-200 px-4 py-3`, each ending with a `<a class="link link-primary text-xs">` source link
-3. Scores: `<div class="stats stats-horizontal shadow bg-base-100 w-full">` with `stat` children (completeness / accuracy / relevance / artifact fit)
-4. Quality: `<div role="alert" class="alert alert-success">Research quality: X/12</div>`
-5. Donut: `<div id="confidence-donut" data-high="N" data-med="N" data-low="N" data-conf="N" class="donut">` in a flex row with a text legend
-6. Takeaways: 3-5 nuance bullets in the same row style as insights
+**Page header** (before all sections) -- include score as a compact inline note so it stays visible without dominating:
+```html
+<h1 class="text-3xl font-bold tracking-tight mb-1">[Query title]</h1>
+<p class="text-base-content/60 text-sm mb-10">[Date] · [N] sources · Score: [X]/12</p>
+```
+
+**`#summary`** -- research output only, no quality metadata here.
+1. Headline: `<div class="border-l-4 border-primary bg-base-100 rounded-r-xl px-5 py-4 font-medium leading-relaxed mb-6">` (1-2 sentence direct answer to the query)
+2. Key insights: 4-6 `<li>` rows in `bg-base-100 rounded-xl border border-base-200 px-4 py-3`, each ending with a `<a class="link link-primary text-xs">` source link. These should be specific, sourced findings -- not restatements.
+3. Takeaways: 3-5 supporting nuance bullets in the same row style
 
 **`#charts`** -- skip for simple queries. Good options:
 - `<progress class="progress progress-primary w-full" value="N" max="100">` for comparison bars
@@ -331,7 +334,28 @@ All component patterns you need are in the section guide below. If you need more
 
 Every factual claim ends with: `<a href="URL" target="_blank" rel="noopener" class="link link-primary text-xs">[domain]</a>`
 
-**`#confidence`** -- `<table class="table table-zebra table-sm w-full">`: columns are confidence (`<span class="badge badge-success/warning/error/secondary badge-sm">`), claim, source link. Curate to 20-40 key claims.
+**`#confidence`** -- research quality metadata lives here, not in summary.
+Start the section with:
+```html
+<!-- score stats -->
+<div class="stats stats-horizontal shadow bg-base-100 w-full mb-4 flex-wrap">
+  <div class="stat place-items-center"><div class="stat-title">Completeness</div><div class="stat-value text-primary text-2xl">[C]/3</div></div>
+  <div class="stat place-items-center"><div class="stat-title">Accuracy</div><div class="stat-value text-success text-2xl">[A]/3</div></div>
+  <div class="stat place-items-center"><div class="stat-title">Relevance</div><div class="stat-value text-info text-2xl">[R]/3</div></div>
+  <div class="stat place-items-center"><div class="stat-title">Artifact fit</div><div class="stat-value text-secondary text-2xl">[F]/3</div></div>
+</div>
+<!-- confidence donut -->
+<div class="flex items-center gap-8 bg-base-100 rounded-xl border border-base-200 p-5 mb-6">
+  <div id="confidence-donut" data-high="N" data-med="N" data-low="N" data-conf="N" class="donut"></div>
+  <div class="flex flex-col gap-2 text-sm">
+    <span><span class="badge badge-success badge-sm">high</span> [N]</span>
+    <span><span class="badge badge-warning badge-sm">medium</span> [N]</span>
+    <span><span class="badge badge-error badge-sm">low</span> [N]</span>
+    <span><span class="badge badge-secondary badge-sm">conflicted</span> [N]</span>
+  </div>
+</div>
+```
+Then the claim table: `<table class="table table-zebra table-sm w-full">` with columns: confidence badge, claim, source link. Curate to 20-40 key claims.
 
 **`#sources`** -- one `<li>` per unique URL. Include confidence badge and freshness date.
 
