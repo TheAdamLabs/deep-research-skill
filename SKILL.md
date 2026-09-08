@@ -249,7 +249,7 @@ YOUR TASK: Find sources that specifically address this gap. Return findings in e
 Write `[output-dir]/dashboard.html` from scratch in a single `Write` call.
 
 **Stack: DaisyUI 5 + Tailwind CSS 4 via CDN** (file requires internet to open).
-Full DaisyUI component reference: `.agents/skills/daisyui/` (read any component file if needed).
+All component patterns you need are in the section guide below. If you need more DaisyUI detail, check https://daisyui.com/components/.
 
 ### Page skeleton
 

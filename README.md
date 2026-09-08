@@ -1,10 +1,10 @@
 # deep-research-skill
 
-A [Cursor Agent Skill](https://docs.cursor.com/agent/skills) for deep, multi-step AI research. Decomposes any query into a parallel subagent execution plan, accumulates structured evidence with confidence ratings, and delivers the right artifact type rather than a wall of text.
+A [Cursor Agent Skill](https://docs.cursor.com/agent/skills) for deep, multi-step AI research. Decomposes any query into a parallel subagent execution plan, accumulates structured evidence with confidence ratings, and delivers a browsable `dashboard.html` built with DaisyUI.
 
 ## Install
 
-The skill requires two files: `SKILL.md` (instructions) and `dashboard-template.html` (the visual output scaffold). Both must be in the same directory.
+The skill is a single file. No other dependencies required.
 
 **Cursor - personal** (all projects):
 
@@ -12,8 +12,6 @@ The skill requires two files: `SKILL.md` (instructions) and `dashboard-template.
 mkdir -p ~/.cursor/skills/deep-research
 curl -o ~/.cursor/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
-curl -o ~/.cursor/skills/deep-research/dashboard-template.html \
-  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 **Cursor - project** (shared via `.cursor/skills/`):
@@ -22,8 +20,6 @@ curl -o ~/.cursor/skills/deep-research/dashboard-template.html \
 mkdir -p .cursor/skills/deep-research
 curl -o .cursor/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
-curl -o .cursor/skills/deep-research/dashboard-template.html \
-  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 **Claude Code - personal** (all projects):
@@ -32,8 +28,6 @@ curl -o .cursor/skills/deep-research/dashboard-template.html \
 mkdir -p ~/.claude/skills/deep-research
 curl -o ~/.claude/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
-curl -o ~/.claude/skills/deep-research/dashboard-template.html \
-  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 **Claude Code - project** (shared via `.claude/skills/`):
@@ -42,11 +36,11 @@ curl -o ~/.claude/skills/deep-research/dashboard-template.html \
 mkdir -p .claude/skills/deep-research
 curl -o .claude/skills/deep-research/SKILL.md \
   https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/SKILL.md
-curl -o .claude/skills/deep-research/dashboard-template.html \
-  https://raw.githubusercontent.com/TheAdamLabs/deep-research-skill/main/dashboard-template.html
 ```
 
 Start a new chat to pick up the skill. No restart needed in Claude Code (skills hot-reload).
+
+> **Note:** The generated `dashboard.html` loads DaisyUI and Tailwind CSS from a CDN, so it requires internet access to display correctly.
 
 > **Note:** The parallel subagent phase requires harness support for spawning subagents. In Cursor this uses the Task tool. In Claude Code it uses `claude -p` via bash. The skill body uses generic language; the agent resolves to whatever its harness provides.
 
@@ -77,7 +71,7 @@ Main agent: synthesis (held in context) -> self-score (0-12)
     |
     +-- [if score 7-9] Patch subagent -> re-score
     |
-Main agent: read dashboard-template.html -> write dashboard.html -> open -> summary to chat
+Main agent: write dashboard.html (DaisyUI + Tailwind CDN) -> open -> summary to chat
 ```
 
 ## License
