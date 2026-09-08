@@ -211,80 +211,41 @@ Synthesize your findings into a structured artifact. **Do not write to a file ye
 
 **Citation rule for every template below:** every factual claim must carry an inline source link using the format `[[domain.com]](https://full-url)`. No claim without a source. In tables, add a source column or superscript footnotes rather than omitting citations.
 
-### Comparative -> Table
+### Comparative (2-5 options)
 
-```markdown
-# [Query Title]
-*Research date: [date] | Sources: N | Confidence: overall rating*
+**`#findings` component: `.option-grid` + `.option-card`**
+One card per option; list every dimension vertically inside the card using `.option-dim` rows. Add `.option-card-verdict` (class `positive`/`neutral`/`negative`) to each card. NEVER write a wide table for comparative findings. If you have 6+ options or 8+ dimensions, use a `.heatmap` in `#charts` and write a short ranked prose summary in `#findings` only.
 
-| Dimension | Option A | Option B | Option C |
-|-----------|----------|----------|----------|
-| [dim]     | [value] [[src]](url) | [value] [[src]](url) | [value] [[src]](url) |
+Citation rule: every `.option-dim-value` that is a factual claim must end with an inline `<a href="[url]" class="src-link">[domain]</a>`.
 
-*† = low-confidence source*
+**`#charts` components:** `.hbar-group` (one per dimension, `data-val="0-100"`) + `.heatmap` (3+ options / 4+ dims). See `dashboard-template.html` `#charts` comments for HTML.
 
-## Conflicts & gaps
-[What sources disagreed on, what couldn't be found (each conflict cites both URLs)]
-```
+### Temporal
 
-**Visual supplements (comparative):** `#charts`: horizontal comparison bars (`.hbar-group`, one per dimension; `data-val="0-100"`) + heat-map matrix (`.heatmap`, for 3+ options / 4+ dims). `#findings`: mermaid `flowchart LR` decision tree as `<pre class="mermaid">`. See `dashboard-template.html` `#charts` comments for HTML examples.
+**`#findings` component: `<table class="timeline-table">`**
+Two columns only: Year (or period) and Event. Wrap in `<div class="table-wrap">`. Every Event cell gets an inline source link. Follow with a "Key turning points" prose paragraph (2-3 sentences, each with a source link).
 
-### Temporal -> Timeline
+**`#charts` component:** SVG timeline (`.timeline-svg`, viewBox 900x160); x = 40 + ((year-min)/(max-min)) * 820; circle r: high=8, med=6, low=4; conflicted adds `stroke-dasharray="4 2"`. Alternate label y: above=58, below=108. See template for SVG skeleton.
 
-```markdown
-# [Query Title]
+### Decision
 
-| Year | Event | Source | Confidence |
-|------|-------|--------|------------|
-| 2020 | [event] | [[domain.com]](https://url) | high |
+**`#findings` component: `.verdict-box`** (class `positive`/`negative`/`neutral`) for the recommendation sentence.
+Follow with:
+- `<h3>Why</h3><ul class="takeaways">` (each `<li>` ends with a source link)
+- `<h3>Risks</h3><ul class="gap-list">` (each `<li>` ends with a source link)
 
-## Key turning points
-[2-3 sentences on inflection points, each ending with [[domain.com]](url)]
-```
+**`#charts` component:** `.bar-chart`; score each option 0-10 from evidence weight; `data-val` = score * 10; color by tier (>=70 `var(--high)`, 40-69 `var(--med)`, <40 `var(--low)`). Tallest bar = recommended option.
 
-**Visual supplements (temporal):** `#charts`: SVG timeline (`.timeline-svg`, viewBox 900x160); x = 40 + ((year-min)/(max-min)) * 820; circle r: high=8, med=6, low=4; conflicted adds `stroke-dasharray="4 2"`; each circle is an `<a>` to its source. Alternate label y: above=58, below=108. `#findings`: mermaid `timeline` diagram as `<pre class="mermaid">`. See template for SVG skeleton.
+### Exploratory / Synthesis
 
-### Decision -> Brief + Evidence
+**`#findings` component: `.claim-list`** grouped under confidence headings.
+- High-confidence: `<li>` (default green left-border)
+- Moderate: `<li class="med">`
+- Contested/unclear: `<li class="conf">`
 
-```markdown
-# [Query Title]
+Every `<li>` that is a factual claim ends with an inline source link.
 
-## Recommendation
-[One direct sentence: yes / no / depends on X] [[primary-source.com]](url)
-
-## Why
-- [Reason 1] [[source.com]](url)
-- [Reason 2] [[source.com]](url)
-- [Reason 3] [[source.com]](url)
-
-## Risks / unknowns
-- [What could invalidate this] [[source.com]](url) *(confidence: low)*
-
-## Full evidence
-[Organized by sub-question; every claim has [[domain]](url)]
-```
-
-**Visual supplements (decision):** `#charts`: vertical bar chart (`.bar-chart`); score each option 0-10 from evidence weight; `data-val` = score * 10; color by tier (>=7 `var(--high)`, 4-6 `var(--med)`, <4 `var(--low)`). Tallest bar = recommended option. No extra diagram in `#findings` needed.
-
-### Exploratory / Synthesis -> Claim Map
-
-```markdown
-# [Query Title]
-
-## High-confidence findings
-- [Claim] [[source.com]](url)
-
-## Contested / unclear
-- [Claim]: [[Source A]](urlA) says X / [[Source B]](urlB) says Y
-
-## Couldn't find
-- [What was searched for but not found]
-
-## Summary
-[Narrative only where structure doesn't fit; keep under 200 words, inline citations throughout]
-```
-
-**Visual supplements (exploratory/synthesis):** `#charts`: concept cluster SVG (`.concept-svg`, viewBox 700x400); center node at (350,200) r=40; 5-8 satellites at r=140 evenly-spaced angles; spoke lines from center; satellite border color = confidence tier. `#findings`: mermaid `mindmap` as `<pre class="mermaid">`.
+**`#charts` component:** concept cluster SVG (`.concept-svg`, viewBox 700x400); center node at (350,200) r=40; 5-8 satellites at r=140 evenly-spaced angles; satellite border color = confidence tier.
 
 **All query types:** `#summary` confidence donut: count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md`, set `data-high/med/low/conf` on `#confidence-donut`. The JS renders the `conic-gradient` automatically.
 
@@ -333,6 +294,19 @@ The skill directory is the directory containing this SKILL.md file (e.g. `/Users
 
 2. **Write the complete dashboard** to `[output-dir]/dashboard.html` using the template as your structural base. Populate every placeholder in a single `Write` call: do not use StrReplace on placeholders. You have full freedom to adapt the structure for your query type.
 
+**Layout rules (strict) -- choose the `#findings` component by data shape:**
+
+| Data shape | `#findings` component | `#charts` component |
+|---|---|---|
+| 2-5 options x any dimensions | `.option-grid` + `.option-card` | `.hbar-group` per dimension |
+| 6+ options or 8+ dimensions | prose summary only | `.heatmap` |
+| Yes/no/should-we recommendation | `.verdict-box` | `.bar-chart` scoring options |
+| Confidence-graded claim list | `.claim-list` | concept cluster SVG |
+| Chronological events | 2-col `<table class="timeline-table">` | SVG timeline |
+| Ranked/scored options | `.option-grid` with `.option-card-verdict` | `.bar-chart` |
+
+**STOP rule: if you are about to write a `<table>` with more than 3 columns inside `#findings`, stop and use `.option-grid` or `.claim-list` instead.**
+
 **What to populate in each section:**
 
 | Section | Content source |
@@ -340,8 +314,8 @@ The skill directory is the directory containing this SKILL.md file (e.g. `/Users
 | `<title>` and `<h1>` | Query title |
 | `.nav-meta`, `.meta` | Date, source count, score |
 | `#summary` score cards + donut | Phase 7 scores; count `CONFIDENCE: high/medium/low/conflicted` lines in `evidence.md` |
-| `#charts` | Phase 6 visual supplements for your query type (see instructions above) |
-| `#findings` | Your Phase 6 synthesis: the full structured artifact (table / timeline / brief / claim map) |
+| `#charts` | Phase 6 visual supplements for your query type (see layout rules above) |
+| `#findings` | Your Phase 6 synthesis using the correct component (see layout rules above) |
 | `#confidence` tbody | One `<tr>` per key claim from `evidence.md` (curate to most important ~20-40 for long runs) |
 | `#sources` | One `<li>` per unique URL from `evidence.md`, ordered by confidence then freshness |
 | `#gaps` | Gaps and follow-up questions from your synthesis |

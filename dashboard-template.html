@@ -81,9 +81,40 @@
     /* Tables */
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; border: 1px solid var(--border); margin: 16px 0; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    thead th { background: #f1f5f9; padding: 11px 14px; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+    thead th { background: #f1f5f9; padding: 11px 14px; text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; white-space: normal; }
     tbody tr:hover { background: #f8fafc; }
-    td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+    td { padding: 11px 14px; border-top: 1px solid var(--border); vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+
+    /* Option cards (comparative findings: one card per option) */
+    .option-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
+    .option-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .option-card-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .option-card-verdict { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .option-card-verdict.positive { background: var(--high-bg); color: var(--high); }
+    .option-card-verdict.neutral  { background: var(--med-bg);  color: var(--med); }
+    .option-card-verdict.negative { background: var(--low-bg);  color: var(--low); }
+    .option-dim { display: flex; gap: 10px; font-size: 13px; padding: 7px 0; border-top: 1px solid var(--border); line-height: 1.4; }
+    .option-dim-label { color: var(--muted); min-width: 110px; flex-shrink: 0; font-weight: 500; padding-top: 1px; }
+    .option-dim-value { flex: 1; color: var(--text); }
+
+    /* Verdict box (decision findings) */
+    .verdict-box { border-radius: 12px; padding: 20px 24px; margin: 16px 0 24px; }
+    .verdict-box.positive { background: var(--high-bg); border: 2px solid var(--high); }
+    .verdict-box.negative { background: var(--low-bg);  border: 2px solid var(--low); }
+    .verdict-box.neutral  { background: var(--med-bg);  border: 2px solid var(--med); }
+    .verdict-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; opacity: 0.7; }
+    .verdict-text { font-size: 16px; font-weight: 600; line-height: 1.5; }
+    .verdict-source { font-size: 12px; margin-top: 10px; opacity: 0.8; }
+
+    /* Claim list (exploratory / synthesis findings) */
+    .claim-list { list-style: none; padding: 0; margin: 0 0 16px; }
+    .claim-list li { padding: 10px 14px 10px 18px; border-left: 3px solid var(--high); background: var(--surface); border-radius: 0 8px 8px 0; margin-bottom: 6px; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .claim-list li.med  { border-left-color: var(--med); }
+    .claim-list li.low  { border-left-color: var(--low); }
+    .claim-list li.conf { border-left-color: var(--conf); }
+
+    /* Timeline table (temporal findings: narrow year col) */
+    .timeline-table td:first-child { width: 80px; font-weight: 600; color: var(--accent); white-space: nowrap; vertical-align: top; }
 
     /* Confidence tags */
     .tag { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: 11.5px; font-weight: 600; }
@@ -144,17 +175,25 @@
     .concept-wrap { overflow-x: auto; margin: 12px 0; }
     .concept-svg { width: 100%; display: block; max-width: 700px; margin: 0 auto; }
 
-    /* Responsive */
+    /* Responsive: mid-size (tablet / small laptop) */
+    @media (max-width: 1024px) {
+      :root { --nav-w: 180px; }
+      main { padding: 36px 32px; }
+    }
+
+    /* Responsive: mobile */
     @media (max-width: 768px) {
       nav { display: none; }
       .mobile-bar { display: block; }
-      main { margin-left: 0; padding: 24px 18px; }
+      main { margin-left: 0; padding: 20px 16px; }
       .score-grid { grid-template-columns: repeat(2, 1fr); }
       h1 { font-size: 20px; }
       .sources-list li { grid-template-columns: 20px 1fr; }
       .src-meta { display: none; }
       .hbar-name { min-width: 80px; }
       .summary-top { flex-direction: column; }
+      .option-grid { grid-template-columns: 1fr; }
+      .verdict-box { padding: 16px; }
     }
   </style>
 </head>
@@ -294,19 +333,65 @@
 
     <!-- ============================================================
          #findings : MAIN RESEARCH ARTIFACT
-         Populate directly from your Phase 6 synthesis.
-         Query-type formats:
-           comparative  -> comparison table with source links per cell
-           temporal     -> events table + key turning points
-           decision     -> recommendation + why + risks
-           exploratory  -> high-confidence findings + contested + couldn't find
-         Every factual claim must have an inline [[domain]](url) source link.
-         For tables: wrap in <div class="table-wrap"><table>...</table></div>
-         Source links in cells: <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>
+         Use the CORRECT component for your query type. NEVER put a table
+         with more than 3 columns here. Every factual claim needs an inline
+         <a href="[url]" target="_blank" rel="noopener" class="src-link">[domain]</a>.
+
+         COMPARATIVE (2-5 options) — option cards:
+         -------------------------------------------------------
+         <div class="option-grid">
+           <div class="option-card">
+             <div class="option-card-name">[Option A]</div>
+             <div class="option-card-verdict positive">Recommended</div>
+             <div class="option-dim"><span class="option-dim-label">[Dimension 1]</span><span class="option-dim-value">[value] <a href="[url]" class="src-link">[src]</a></span></div>
+             <div class="option-dim"><span class="option-dim-label">[Dimension 2]</span><span class="option-dim-value">[value]</span></div>
+           </div>
+           <!-- repeat .option-card for each option -->
+         </div>
+
+         COMPARATIVE (6+ options or 8+ dimensions) — heatmap in #charts + brief prose here
+
+         DECISION — verdict box + why + risks:
+         -------------------------------------------------------
+         <div class="verdict-box positive">
+           <div class="verdict-label">Verdict</div>
+           <div class="verdict-text">[Recommendation sentence.]</div>
+           <div class="verdict-source"><a href="[url]" class="src-link">[primary source]</a></div>
+         </div>
+         <h3>Why</h3>
+         <ul class="takeaways">...</ul>
+         <h3>Risks</h3>
+         <ul class="gap-list">...</ul>
+
+         EXPLORATORY / SYNTHESIS — claim list by confidence tier:
+         -------------------------------------------------------
+         <h3>High-confidence findings</h3>
+         <ul class="claim-list">
+           <li>[Claim] <a href="[url]" class="src-link">[domain]</a></li>
+         </ul>
+         <h3>Moderate confidence</h3>
+         <ul class="claim-list">
+           <li class="med">[Claim] <a href="[url]" class="src-link">[domain]</a></li>
+         </ul>
+         <h3>Contested or unclear</h3>
+         <ul class="claim-list">
+           <li class="conf">[Claim]</li>
+         </ul>
+
+         TEMPORAL — narrow 2-col timeline table:
+         -------------------------------------------------------
+         <div class="table-wrap">
+           <table class="timeline-table">
+             <thead><tr><th>Year</th><th>Event</th></tr></thead>
+             <tbody>
+               <tr><td>[Year]</td><td>[Event] <a href="[url]" class="src-link">[src]</a></td></tr>
+             </tbody>
+           </table>
+         </div>
     ============================================================ -->
     <section id="findings">
       <h2>Findings</h2>
-      <!-- POPULATE with Phase 6 synthesis output -->
+      <!-- POPULATE using the skeletons above -->
     </section>
 
     <!-- ============================================================
